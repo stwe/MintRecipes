@@ -1,6 +1,15 @@
 #!/bin/bash
 
 # ################################################
+# PRE INSTALL BACKUP
+# ################################################
+# Thunderbird
+# Chrome bookmarks
+# KeepassXC file
+# Bilder, Dokumente, Videos, CLionProjects
+# ################################################
+
+# ################################################
 # Constants
 # ################################################
 
@@ -30,7 +39,7 @@ mkdir -p ~/.config ~/.fonts ~/.icons ~/.themes
 echo "Copying configuration files..."
 cp -R .config/alacritty ~/.config
 cp -R .config/nvim ~/.config
-# todo: gocryptfs
+cp .local/bin/gcfs.sh ~/.local/bin
 
 # ################################################
 # Install
@@ -187,3 +196,53 @@ gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty
 
 echo "Completed. Have fun with Linux Mint."
 echo "It's probably a good idea to restart your computer."
+
+# ################################################
+# POST POST INSTALL
+# ################################################
+# 1) Create SSH Key
+# 2) Setup gocrytpfs
+# 3) Zsh / oh-my-zsh
+# 4) nordvpn login / nordvpn connect
+
+# ################################################
+# 1) Create SSH Key
+# ################################################
+
+# generate a local SSH pair of keys: ssh-keygen -t ed25519 -C "blibla@blub.tt"
+# Make sure ssh-agent is running in the background: eval "$(ssh-agent -s)"
+# Add private key (the one without extension) to the ssh-agent: ssh-add ~/.ssh/id_ed25519
+# Copy public key to your clipboard: cat ~/.ssh/example_keys.pub
+# Add to GitHub: -> Settings -> SSH and GPG keys ->  New SSH key
+
+# ################################################
+# 2) Setup (new!!) gocrytpfs
+# ################################################
+#
+# unmount if needed: fusermount -u ~/Tresor
+# mkdir ~/Tresor
+# mkdir ~/Nextcloud/.encrypted
+# gocryptfs -init ~/Nextcloud/.encrypted
+# secret-tool store --label="Nextcloud Tresor" password tresor
+# secret-tool lookup password tresor
+# gocryptfs ~/Nextcloud/.encrypted/ ~/Tresor/
+# gcfs.sh add to autostart
+
+# ################################################
+# 3) Zsh / oh-my-zsh
+# ################################################
+#
+# ## Go with Zsh - Reboot needed!!!!
+# chsh -s $(which zsh)
+
+# ## Install oh-my-zsh
+# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# ## Autosuggestion and syntax highlight plugins
+# git clone https://github.com/zsh-users/zsh-autosuggestions.git $ZSH/plugins/zsh-autosuggestions
+# git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $ZSH/plugins/zsh-syntax-highlighting
+# plugins=(git z zsh-autosuggestions zsh-syntax-highlighting)
+
+# ## Install Powerlevel10k
+# git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+# ZSH_THEME="powerlevel10k/powerlevel10k"
