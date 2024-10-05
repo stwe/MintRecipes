@@ -81,14 +81,12 @@ echo "Installing CLion ${clion_version}..."
 wget https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz
 tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion
 rm CLion-${clion_version}.tar.gz
-# todo: rename dir
 
 # IntelliJ IDEA Community
 echo "Installing IntelliJ IDEA Community ${idea_version}..."
 wget https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz
 tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea
 rm ideaIC-${idea_version}.tar.gz
-# todo: rename dir
 
 # Google Chrome
 echo "Installing Google Chrome..."
@@ -106,7 +104,7 @@ rm whatsapp-for-linux_${whatsapp_version}_amd64.deb
 echo "Installing multimedia applications..."
 sudo nala install -y vlc gimp gimp-help-de
 
-# To use my Nextcloud
+# To use Nextcloud
 echo "Installing Nextcloud Client and gocryptfs..."
 sudo nala install -y gnome-calendar nextcloud-desktop gocryptfs libsecret-tools
 
