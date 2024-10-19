@@ -59,6 +59,10 @@ sudo nala fetch
 echo "Installing essential tools..."
 sudo nala install -y htop mc neofetch wget curl keepassxc unrar xpad tree gparted grub2-theme-mint eza putty apt-transport-https ca-certificates unzip
 
+# Monitoring
+echo "Installing monitoring tools..."
+sudo nala install -y lm-sensors xsensors fonts-symbola smartmontools
+
 # Alacritty && Zsh
 echo "Installing alternative terminal..."
 sudo nala install -y alacritty zsh
