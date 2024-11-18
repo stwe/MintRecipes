@@ -1,140 +1,151 @@
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
-    vim.fn.getchar()
-    os.exit(1)
-  end
+    local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+    local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+    if vim.v.shell_error ~= 0 then
+        vim.api.nvim_echo({
+            { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+            { out,                            "WarningMsg" },
+            { "\nPress any key to exit..." },
+        }, true, {})
+        vim.fn.getchar()
+        os.exit(1)
+    end
 end
 vim.opt.rtp:prepend(lazypath)
 
 -- Setup lazy.nvim
 require("lazy").setup({
-  spec = {
-    { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
-    {
-      'nvim-telescope/telescope.nvim', tag = '0.1.8',
-      dependencies = { 'nvim-lua/plenary.nvim' }
-    },
-    {
-      "nvim-tree/nvim-tree.lua",
-      version = "*",
-      lazy = false,
-      dependencies = {
-        "nvim-tree/nvim-web-devicons",
-      },
-      config = function()
-        require("nvim-tree").setup {}
-      end,
-    },
-    {
-      {
-        'VonHeikemen/lsp-zero.nvim',
-        branch = 'v3.x',
-        lazy = true,
-        config = false,
-        init = function()
-          -- Disable automatic setup, we are doing it manually
-          vim.g.lsp_zero_extend_cmp = 0
-          vim.g.lsp_zero_extend_lspconfig = 0
-        end,
-      },
-      {
-        'williamboman/mason.nvim',
-        lazy = false,
-        config = true,
-      },
-
-      -- Autocompletion
-      {
-        'hrsh7th/nvim-cmp',
-        event = 'InsertEnter',
-        dependencies = {
-          {'L3MON4D3/LuaSnip'},
+    spec = {
+        { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+        {
+            'nvim-telescope/telescope.nvim',
+            tag = '0.1.8',
+            dependencies = { 'nvim-lua/plenary.nvim' }
         },
-        config = function()
-          -- Here is where you configure the autocompletion settings.
-          local lsp_zero = require('lsp-zero')
-          lsp_zero.extend_cmp()
-
-          -- And you can configure cmp even more, if you want to.
-          local cmp = require('cmp')
-          local cmp_action = lsp_zero.cmp_action()
-
-          cmp.setup({
-            formatting = lsp_zero.cmp_format({details = true}),
-            mapping = cmp.mapping.preset.insert({
-              ['<C-Space>'] = cmp.mapping.complete(),
-              ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-              ['<C-d>'] = cmp.mapping.scroll_docs(4),
-              ['<C-f>'] = cmp_action.luasnip_jump_forward(),
-              ['<C-b>'] = cmp_action.luasnip_jump_backward(),
-            }),
-            snippet = {
-              expand = function(args)
-                require('luasnip').lsp_expand(args.body)
-              end,
+        {
+            "nvim-tree/nvim-tree.lua",
+            version = "*",
+            lazy = false,
+            dependencies = {
+                "nvim-tree/nvim-web-devicons",
             },
-          })
-        end
-      },
-
-      -- LSP
-      {
-        'neovim/nvim-lspconfig',
-        cmd = {'LspInfo', 'LspInstall', 'LspStart'},
-        event = {'BufReadPre', 'BufNewFile'},
-        dependencies = {
-          {'hrsh7th/cmp-nvim-lsp'},
-          {'williamboman/mason-lspconfig.nvim'},
+            config = function()
+                require("nvim-tree").setup {}
+            end,
         },
-        config = function()
-          -- This is where all the LSP shenanigans will live
-          local lsp_zero = require('lsp-zero')
-          lsp_zero.extend_lspconfig()
-
-          -- if you want to know more about mason.nvim
-          -- read this: https://github.com/VonHeikemen/lsp-zero.nvim/blob/v3.x/doc/md/guides/integrate-with-mason-nvim.md
-          lsp_zero.on_attach(function(client, bufnr)
-            -- see :help lsp-zero-keybindings
-            -- to learn the available actions
-            lsp_zero.default_keymaps({buffer = bufnr})
-          end)
-
-          require('mason-lspconfig').setup({
-            ensure_installed = {
-              'clangd'
+        {
+            'nvim-lualine/lualine.nvim',
+            dependencies = { 'nvim-tree/nvim-web-devicons' },
+            config = function()
+                require("lualine").setup {}
+            end,
+        },
+        {
+            'nvimdev/dashboard-nvim',
+            event = 'VimEnter',
+            config = function()
+                require('dashboard').setup {}
+            end,
+            dependencies = { { 'nvim-tree/nvim-web-devicons' } }
+        },
+        {
+            {
+                'williamboman/mason.nvim',
+                lazy = false,
+                opts = {},
             },
-            handlers = {
-              -- this first function is the "default handler"
-              -- it applies to every language server without a "custom handler"
-              function(server_name)
-                require('lspconfig')[server_name].setup({})
-              end,
 
-              -- this is the "custom handler" for `lua_ls`
-              lua_ls = function()
-                -- (Optional) Configure lua language server for neovim
-                local lua_opts = lsp_zero.nvim_lua_ls()
-                require('lspconfig').lua_ls.setup(lua_opts)
-              end,
+            -- Autocompletion
+            {
+                'hrsh7th/nvim-cmp',
+                event = 'InsertEnter',
+                config = function()
+                    local cmp = require('cmp')
+
+                    cmp.setup({
+                        sources = {
+                            { name = 'nvim_lsp' },
+                        },
+                        mapping = cmp.mapping.preset.insert({
+                            ['<C-Space>'] = cmp.mapping.complete(),
+                            ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+                            ['<C-d>'] = cmp.mapping.scroll_docs(4),
+                        }),
+                        snippet = {
+                            expand = function(args)
+                                vim.snippet.expand(args.body)
+                            end,
+                        },
+                    })
+                end
+            },
+
+            -- LSP
+            {
+                'neovim/nvim-lspconfig',
+                cmd = { 'LspInfo', 'LspInstall', 'LspStart' },
+                event = { 'BufReadPre', 'BufNewFile' },
+                dependencies = {
+                    { 'hrsh7th/cmp-nvim-lsp' },
+                    { 'williamboman/mason.nvim' },
+                    { 'williamboman/mason-lspconfig.nvim' },
+                },
+                init = function()
+                    -- Reserve a space in the gutter
+                    -- This will avoid an annoying layout shift in the screen
+                    vim.opt.signcolumn = 'yes'
+                end,
+                config = function()
+                    local lsp_defaults = require('lspconfig').util.default_config
+
+                    -- Add cmp_nvim_lsp capabilities settings to lspconfig
+                    -- This should be executed before you configure any language server
+                    lsp_defaults.capabilities = vim.tbl_deep_extend(
+                        'force',
+                        lsp_defaults.capabilities,
+                        require('cmp_nvim_lsp').default_capabilities()
+                    )
+
+                    -- LspAttach is where you enable features that only work
+                    -- if there is a language server active in the file
+                    vim.api.nvim_create_autocmd('LspAttach', {
+                        desc = 'LSP actions',
+                        callback = function(event)
+                            local opts = { buffer = event.buf }
+
+                            vim.keymap.set('n', 'K', '<cmd>lua vim.lsp.buf.hover()<cr>', opts)
+                            vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>', opts)
+                            vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>', opts)
+                            vim.keymap.set('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<cr>', opts)
+                            vim.keymap.set('n', 'go', '<cmd>lua vim.lsp.buf.type_definition()<cr>', opts)
+                            vim.keymap.set('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>', opts)
+                            vim.keymap.set('n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<cr>', opts)
+                            vim.keymap.set('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<cr>', opts)
+                            vim.keymap.set({ 'n', 'x' }, '<F3>', '<cmd>lua vim.lsp.buf.format({async = true})<cr>', opts)
+                            vim.keymap.set('n', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>', opts)
+                        end,
+                    })
+
+                    require('mason-lspconfig').setup({
+                        ensure_installed = {},
+                        handlers = {
+                            -- this first function is the "default handler"
+                            -- it applies to every language server without a "custom handler"
+                            function(server_name)
+                                require('lspconfig')[server_name].setup({})
+                            end,
+                        }
+                    })
+                end
             }
-          })
-        end
-      }
-    }
-  }, -- end spec
+        }
+    }, -- end spec
 
-  -- Configure any other settings here. See the documentation for more details.
-  -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { "habamax" } },
-  -- automatically check for plugin updates
-  checker = { enabled = true },
+    -- Configure any other settings here. See the documentation for more details.
+    -- colorscheme that will be used when installing plugins.
+    install = { colorscheme = { "habamax" } },
+    -- automatically check for plugin updates
+    checker = { enabled = true },
 })
