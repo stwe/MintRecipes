@@ -7,3 +7,5 @@ vim.keymap.set("n", "<leader>fo", ":Telescope oldfiles<cr>")
 -- tree
 vim.keymap.set("n", "<leader>e", ":NvimTreeFindFileToggle<cr>")
 
+-- format code using LSP
+vim.keymap.set("n", "<leader>fmd", vim.lsp.buf.format)

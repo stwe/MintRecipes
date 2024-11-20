@@ -51,6 +51,24 @@ require("lazy").setup({
             dependencies = { { 'nvim-tree/nvim-web-devicons' } }
         },
         {
+            "lewis6991/gitsigns.nvim",
+            dependencies = { "nvim-lua/plenary.nvim" },
+            config = function()
+                require('gitsigns').setup {
+                    signs = {
+                        add = { text = '│' },
+                        change = { text = '│' },
+                        delete = { text = '_' },
+                        topdelete = { text = '‾' },
+                        changedelete = { text = '~' }
+                    },
+                    signcolumn = true,
+                    numhl = false,
+                    linehl = false,
+                }
+            end,
+        },
+        {
             {
                 'williamboman/mason.nvim',
                 lazy = false,
@@ -60,7 +78,7 @@ require("lazy").setup({
             -- Autocompletion
             {
                 'hrsh7th/nvim-cmp',
-                event = 'InsertEnter',
+                event = { "InsertEnter", "CmdlineEnter" },
                 config = function()
                     local cmp = require('cmp')
 
@@ -72,6 +90,8 @@ require("lazy").setup({
                             ['<C-Space>'] = cmp.mapping.complete(),
                             ['<C-u>'] = cmp.mapping.scroll_docs(-4),
                             ['<C-d>'] = cmp.mapping.scroll_docs(4),
+                            ['<Tab>'] = cmp.mapping.select_next_item(),
+                            ['<S-Tab>'] = cmp.mapping.select_prev_item(),
                         }),
                         snippet = {
                             expand = function(args)
