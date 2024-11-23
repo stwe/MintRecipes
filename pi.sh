@@ -13,9 +13,8 @@
 # Constants
 # ################################################
 
-clion_version="2024.2.2"
-idea_version="2024.2.3"
-whatsapp_version="1.6.5"
+clion_version="2024.3"
+idea_version="2024.3"
 wallpaper_file_name=waterfall_grass_nature_92753_1920x1200.jpg
 wallpaper_image_path="file://$HOME/Bilder/$wallpaper_file_name"
 
@@ -38,7 +37,6 @@ mkdir -p ~/.config ~/.fonts ~/.icons ~/.themes
 
 echo "Copying configuration files..."
 cp -R .config/alacritty ~/.config
-cp -R .config/nvim ~/.config
 cp .local/bin/gcfs.sh ~/.local/bin
 
 # ################################################
@@ -69,16 +67,14 @@ sudo nala install -y alacritty zsh
 
 # Dev stuff
 echo "Installing development tools..."
-sudo nala install -y build-essential git cmake openjdk-17-jre
+sudo nala install -y build-essential git cmake default-jre
 
-# OlcPixelGameEngine dependencies
-echo "Installing development libs..."
-sudo nala install -y libglu1-mesa-dev libpng-dev
-
-# Zed && Neovim
-echo "Installing Zed and Neovim..."
+# Zed && Neovim with LazyVim setup
+echo "Installing Zed and Neovim with LazyVim setup..."
 curl -f https://zed.dev/install.sh | sh
-sudo nala install -y neovim luarocks ripgrep
+sudo nala install -y neovim luarocks ripgrep fd-find
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
 
 # Lazygit
 echo "Installing Lazygit..."
@@ -107,11 +103,12 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo nala install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 
-# WhatsApp Client
-echo "Installing WhatsApp Client ${whatsapp_version}..."
-wget https://github.com/eneshecan/whatsapp-for-linux/releases/download/v${whatsapp_version}/whatsapp-for-linux_${whatsapp_version}_amd64.deb
-sudo nala install -y ./whatsapp-for-linux_${whatsapp_version}_amd64.deb
-rm whatsapp-for-linux_${whatsapp_version}_amd64.deb
+# Messenger Client
+echo "Installing Messenger Client ..."
+WA_VERSION=$(curl -s "https://api.github.com/repos/xeco23/WasIstLos/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+wget https://github.com/xeco23/WasIstLos/releases/latest/download/wasistlos_${WA_VERSION}_amd64.deb
+sudo nala install -y ./wasistlos_${WA_VERSION}_amd64.deb
+rm wasistlos_${WA_VERSION}_amd64.deb
 
 # Multimedia
 echo "Installing multimedia applications..."
