@@ -55,7 +55,7 @@ sudo nala fetch
 
 # Tools
 echo "Installing essential tools..."
-sudo nala install -y htop mc neofetch wget curl keepassxc unrar xpad tree gparted grub2-theme-mint eza putty apt-transport-https ca-certificates unzip
+sudo nala install -y htop mc neofetch wget curl keepassxc unrar tree gparted grub2-theme-mint eza putty apt-transport-https ca-certificates unzip
 
 # Monitoring
 echo "Installing monitoring tools..."
@@ -139,16 +139,43 @@ sudo nala update
 sudo nala install -y code
 
 # Ollama
+echo "Installing Ollama..."
 curl -fsSL https://ollama.com/install.sh | sh
 
 # ################################################
 # Remove packages
 # ################################################
 
-echo "Removing unnecessary packages..."
+echo "Removing firefox..."
 sudo nala purge -y firefox firefox-locale-*
+
+echo "Removing BitTorrent client..."
 sudo nala purge -y transmission-*
-sudo nala purge -y sticky
+
+# ################################################
+# Remove (forever) GNOME keyring so we can use
+# KeepassXC instead
+# ################################################
+
+echo "Removing GNOME Keyring..."
+# Remove GNOME Keyring autostart entries for all users
+sudo rm -f /etc/xdg/autostart/gnome-keyring-*.desktop
+# Remove GNOME Keyring autostart entries for the current user
+rm -f ~/.config/autostart/gnome-keyring-*.desktop
+# Uninstall GNOME Keyring
+sudo nala purge -y gnome-keyring
+# Delete local keyring files
+rm -rf ~/.local/share/keyrings
+# Clean up PAM configuration
+sudo sed -i '/pam_gnome_keyring.so/d' /etc/pam.d/*
+# Verify if all entries have been removed
+grep pam_gnome_keyring.so /etc/pam.d/* || echo "PAM entries for GNOME Keyring removed"
+
+# ################################################
+# Remove unnecessary packages
+# ################################################
+
+sudo nala autoremove -y
 
 # ################################################
 # Set up the firewall
@@ -202,9 +229,11 @@ echo "It's probably a good idea to restart your computer."
 # POST POST INSTALL
 # ################################################
 # 1) Create SSH Key
-# 2) Setup gocrytpfs
-# 3) Zsh / oh-my-zsh
-# 4) nordvpn login / nordvpn connect
+# 2) Create GPG Key
+# 3) Setup gocrytpfs
+# 4) Zsh / oh-my-zsh
+# 5) nordvpn login / nordvpn connect
+# 6) KeepassXC als Secret Service provider
 
 # ################################################
 # 1) Create SSH Key
@@ -217,9 +246,16 @@ echo "It's probably a good idea to restart your computer."
 # Add to GitHub: -> Settings -> SSH and GPG keys ->  New SSH key
 
 # ################################################
-# 2) Setup (new!!) gocrytpfs
+# 2) Create GPG Key (RSA/4096)
 # ################################################
-#
+
+# gpg --list-keys
+# gpg --full-generate-key
+
+# ################################################
+# 3) Setup (new!!) gocrytpfs
+# ################################################
+
 # unmount if needed: fusermount -u ~/Tresor
 # mkdir ~/Tresor
 # mkdir ~/Nextcloud/.encrypted
@@ -230,9 +266,9 @@ echo "It's probably a good idea to restart your computer."
 # gcfs.sh add to autostart
 
 # ################################################
-# 3) Zsh / oh-my-zsh
+# 4) Zsh / oh-my-zsh
 # ################################################
-#
+
 # ## Go with Zsh - Reboot needed!!!!
 # chsh -s $(which zsh)
 
@@ -247,3 +283,36 @@ echo "It's probably a good idea to restart your computer."
 # ## Install Powerlevel10k
 # git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
 # ZSH_THEME="powerlevel10k/powerlevel10k"
+
+# ################################################
+# 5) nordvpn login / nordvpn connect
+# ################################################
+
+# todo
+
+# ################################################
+# 6) KeepassXC als Secret Service provider
+# ################################################
+
+# Create a new group in the database that will hold the passwords used for the keyring
+
+# Tools > Settings > Secret Service Integration > Enable KeepassXC Freedesktop.org Secret Service integration
+
+# Database > Database Settings > Secret Service Integration > Expose entries under this group:
+# Select the new group
+
+# Store the encrypted password in a file:
+# echo "YOURPW" | gpg -r myemail@email.com -e -o /path/to/key.gpg
+
+# Create keyfile:
+# echo "YOURSTRING" | sha256sum /dev/stdin | cut -d " " -f 1 >> /path/to/keyfile.key
+
+# Autostart KeepassXC via Shell-Script
+# #!/bin/bash
+# PASSWORD=$(gpg --quiet --batch --decrypt /path/to/key.gpg)
+# echo $PASSWORD | /usr/bin/keepassxc --pw-stdin /path/to/db.kdbx --keyfile /path/to/keyfile.key > /path/to/autostart.log 2>&1
+
+# Enable: Bei Programmstart Fenster minimieren
+# Enable: Minimieren statt Programm zu beenden
+# Enable: Taskleistensymbol anzeigen
+# Disable: Bestätigen, wenn Passwörter abgerufen werden
