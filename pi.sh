@@ -13,8 +13,9 @@
 # Constants
 # ################################################
 
-clion_version="2024.3"
-idea_version="2024.3"
+# read the version from the flatpak to install the download from the website
+clion_version=$(flatpak remote-info flathub com.jetbrains.CLion 2>/dev/null | grep -i "Version:" | awk '{print $2}')
+idea_version=$(flatpak remote-info flathub com.jetbrains.IntelliJ-IDEA-Community 2>/dev/null | grep -i "Version:" | awk '{print $2}')
 wallpaper_file_name=waterfall_grass_nature_92753_1920x1200.jpg
 wallpaper_image_path="file://$HOME/Bilder/$wallpaper_file_name"
 
