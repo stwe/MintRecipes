@@ -153,25 +153,6 @@ echo "Removing BitTorrent client..."
 sudo nala purge -y transmission-*
 
 # ################################################
-# Remove (forever) GNOME keyring so we can use
-# KeepassXC instead
-# ################################################
-
-echo "Removing GNOME Keyring..."
-# Remove GNOME Keyring autostart entries for all users
-sudo rm -f /etc/xdg/autostart/gnome-keyring-*.desktop
-# Remove GNOME Keyring autostart entries for the current user
-rm -f ~/.config/autostart/gnome-keyring-*.desktop
-# Uninstall GNOME Keyring
-sudo nala purge -y gnome-keyring
-# Delete local keyring files
-rm -rf ~/.local/share/keyrings
-# Clean up PAM configuration
-sudo sed -i '/pam_gnome_keyring.so/d' /etc/pam.d/*
-# Verify if all entries have been removed
-grep pam_gnome_keyring.so /etc/pam.d/* || echo "PAM entries for GNOME Keyring removed"
-
-# ################################################
 # Remove unnecessary packages
 # ################################################
 
@@ -229,11 +210,10 @@ echo "It's probably a good idea to restart your computer."
 # POST POST INSTALL
 # ################################################
 # 1) Create SSH Key
-# 2) Create GPG Key
-# 3) Setup gocrytpfs
-# 4) Zsh / oh-my-zsh
-# 5) nordvpn login / nordvpn connect
-# 6) KeepassXC als Secret Service provider
+# 2) Setup gocrytpfs
+# 3) Zsh / oh-my-zsh
+# 4) nordvpn login / nordvpn connect
+# 5) KeepassXC
 
 # ################################################
 # 1) Create SSH Key
@@ -246,14 +226,7 @@ echo "It's probably a good idea to restart your computer."
 # Add to GitHub: -> Settings -> SSH and GPG keys ->  New SSH key
 
 # ################################################
-# 2) Create GPG Key (RSA/4096)
-# ################################################
-
-# gpg --list-keys
-# gpg --full-generate-key
-
-# ################################################
-# 3) Setup (new!!) gocrytpfs
+# 2) Setup (new!!) gocrytpfs
 # ################################################
 
 # unmount if needed: fusermount -u ~/Tresor
@@ -266,7 +239,7 @@ echo "It's probably a good idea to restart your computer."
 # gcfs.sh add to autostart
 
 # ################################################
-# 4) Zsh / oh-my-zsh
+# 3) Zsh / oh-my-zsh
 # ################################################
 
 # ## Go with Zsh - Reboot needed!!!!
@@ -285,34 +258,25 @@ echo "It's probably a good idea to restart your computer."
 # ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # ################################################
-# 5) nordvpn login / nordvpn connect
+# 4) nordvpn login / nordvpn connect
 # ################################################
 
 # todo
 
 # ################################################
-# 6) KeepassXC als Secret Service provider
+# 5) KeepassXC
 # ################################################
-
-# Create a new group in the database that will hold the passwords used for the keyring
-
-# Tools > Settings > Secret Service Integration > Enable KeepassXC Freedesktop.org Secret Service integration
-
-# Database > Database Settings > Secret Service Integration > Expose entries under this group:
-# Select the new group
-
-# Store the encrypted password in a file:
-# echo "YOURPW" | gpg -r myemail@email.com -e -o /path/to/key.gpg
 
 # Create keyfile:
 # echo "YOURSTRING" | sha256sum /dev/stdin | cut -d " " -f 1 >> /path/to/keyfile.key
 
+# Store password
+# secret-tool store --label="KeepassXC" password keepass
+
 # Autostart KeepassXC via Shell-Script
-# #!/bin/bash
-# PASSWORD=$(gpg --quiet --batch --decrypt /path/to/key.gpg)
-# echo $PASSWORD | /usr/bin/keepassxc --pw-stdin /path/to/db.kdbx --keyfile /path/to/keyfile.key > /path/to/autostart.log 2>&1
+# PASSWORD=$(secret-tool lookup password keepass)
+# echo $PASSWORD | /usr/bin/keepassxc --pw-stdin /path/to/your.kdbx --keyfile /path/to/keyfile.key > /path/to/autostart.log 2>&1
 
 # Enable: Bei Programmstart Fenster minimieren
 # Enable: Minimieren statt Programm zu beenden
 # Enable: Taskleistensymbol anzeigen
-# Disable: Bestätigen, wenn Passwörter abgerufen werden
