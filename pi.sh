@@ -13,7 +13,7 @@
 # Constants
 # ################################################
 
-# read the version from the flatpak to install the download from the website
+# read the version from the Flatpak to install the correct download from the website
 clion_version=$(flatpak remote-info flathub com.jetbrains.CLion 2>/dev/null | grep -i "Version:" | awk '{print $2}')
 idea_version=$(flatpak remote-info flathub com.jetbrains.IntelliJ-IDEA-Community 2>/dev/null | grep -i "Version:" | awk '{print $2}')
 wallpaper_file_name=waterfall_grass_nature_92753_1920x1200.jpg
@@ -60,7 +60,7 @@ sudo nala install -y htop mc neofetch wget curl keepassxc unrar tree gparted gru
 
 # Monitoring
 echo "Installing monitoring tools..."
-sudo nala install -y lm-sensors xsensors fonts-symbola smartmontools
+sudo nala install -y lm-sensors xsensors fonts-symbola smartmontools wavemon
 
 # Alacritty && Zsh
 echo "Installing alternative terminal..."
