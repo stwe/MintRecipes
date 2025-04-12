@@ -49,31 +49,25 @@ echo "Updating the system..."
 sudo apt update -y
 sudo apt upgrade -y
 
-# Nala
-echo "Installing Nala..."
-sudo apt install -y nala
-sudo nala fetch
-
 # Tools
 echo "Installing essential tools..."
-sudo nala install -y htop mc neofetch wget curl keepassxc unrar tree gparted grub2-theme-mint eza putty apt-transport-https ca-certificates unzip
+sudo apt install -y htop mc neofetch wget curl keepassxc unrar tree gparted grub2-theme-mint putty apt-transport-https ca-certificates unzip vulkan-tools
 
 # Monitoring
 echo "Installing monitoring tools..."
-sudo nala install -y lm-sensors xsensors fonts-symbola smartmontools wavemon
+sudo apt install -y lm-sensors xsensors fonts-symbola smartmontools wavemon
 
 # Alacritty && Zsh
 echo "Installing alternative terminal..."
-sudo nala install -y alacritty zsh
+sudo apt install -y alacritty zsh
 
 # Dev stuff
 echo "Installing development tools..."
-sudo nala install -y build-essential git cmake default-jre
+sudo apt install -y build-essential git cmake default-jre doxygen graphviz doxygen-gui
 
-# Zed && Neovim with LazyVim setup
-echo "Installing Zed and Neovim with LazyVim setup..."
-curl -f https://zed.dev/install.sh | sh
-sudo nala install -y neovim luarocks ripgrep fd-find
+# Neovim with LazyVim setup
+echo "Installing Neovim with LazyVim setup..."
+sudo apt install -y neovim luarocks ripgrep fd-find
 git clone https://github.com/LazyVim/starter ~/.config/nvim
 rm -rf ~/.config/nvim/.git
 
@@ -101,23 +95,23 @@ rm ideaIC-${idea_version}.tar.gz
 # Google Chrome
 echo "Installing Google Chrome..."
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-sudo nala install -y ./google-chrome-stable_current_amd64.deb
+sudo apt install -y ./google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 
 # Messenger Client
 echo "Installing Messenger Client ..."
 WA_VERSION=$(curl -s "https://api.github.com/repos/xeco23/WasIstLos/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
 wget https://github.com/xeco23/WasIstLos/releases/latest/download/wasistlos_${WA_VERSION}_amd64.deb
-sudo nala install -y ./wasistlos_${WA_VERSION}_amd64.deb
+sudo apt install -y ./wasistlos_${WA_VERSION}_amd64.deb
 rm wasistlos_${WA_VERSION}_amd64.deb
 
 # Multimedia
 echo "Installing multimedia applications..."
-sudo nala install -y vlc gimp gimp-help-de
+sudo apt install -y vlc gimp gimp-help-de
 
 # To use Nextcloud
 echo "Installing Nextcloud Client and gocryptfs..."
-sudo nala install -y gnome-calendar nextcloud-desktop gocryptfs libsecret-tools
+sudo apt install -y gnome-calendar nextcloud-desktop gocryptfs libsecret-tools
 
 # NordVPN
 echo "Installing NordVPN..."
@@ -127,8 +121,8 @@ sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
 echo "Installing Docker..."
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo nala update
-sudo nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Visual Studio Code
 echo "Installing Visual Studio Code..."
@@ -136,8 +130,8 @@ wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > pa
 sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
 echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
 rm -f packages.microsoft.gpg
-sudo nala update
-sudo nala install -y code
+sudo apt update
+sudo apt install -y code
 
 # Ollama
 echo "Installing Ollama..."
@@ -148,16 +142,16 @@ curl -fsSL https://ollama.com/install.sh | sh
 # ################################################
 
 echo "Removing firefox..."
-sudo nala purge -y firefox firefox-locale-*
+sudo apt purge -y firefox firefox-locale-*
 
 echo "Removing BitTorrent client..."
-sudo nala purge -y transmission-*
+sudo apt purge -y transmission-*
 
 # ################################################
 # Remove unnecessary packages
 # ################################################
 
-sudo nala autoremove -y
+sudo apt autoremove -y
 
 # ################################################
 # Set up the firewall
