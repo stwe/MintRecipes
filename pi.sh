@@ -42,16 +42,6 @@ idea_version=$(flatpak remote-info flathub com.jetbrains.IntelliJ-IDEA-Community
 wallpaper_file_name=waterfall_grass_nature_92753_1920x1200.jpg
 wallpaper_image_path="file://$HOME/Bilder/$wallpaper_file_name"
 
-if [ -z "$clion_version" ]; then
-    print_error "CLion version could not be determined from Flatpak."
-    exit 1
-fi
-
-if [ -z "$idea_version" ]; then
-    print_error "IntelliJ IDEA Community version could not be determined from Flatpak."
-    exit 1
-fi
-
 # ################################################
 # Create directories
 # ################################################
@@ -154,7 +144,7 @@ sudo apt install -y gnome-calendar nextcloud-desktop gocryptfs libsecret-tools
 
 # NordVPN
 print_section "Installing NordVPN..."
-sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
+curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh | sh
 
 # Docker
 print_section "Installing Docker..."
