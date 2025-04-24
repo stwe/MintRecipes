@@ -133,10 +133,6 @@ rm -f packages.microsoft.gpg
 sudo apt update
 sudo apt install -y code
 
-# Ollama
-echo "Installing Ollama..."
-curl -fsSL https://ollama.com/install.sh | sh
-
 # ################################################
 # Remove packages
 # ################################################
