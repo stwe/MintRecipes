@@ -278,13 +278,7 @@ print_section "It's probably a good idea to restart your computer."
 # ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # ################################################
-# 4) nordvpn login / nordvpn connect
-# ################################################
-
-# todo
-
-# ################################################
-# 5) KeepassXC
+# 4) KeepassXC
 # ################################################
 
 # Create keyfile:
