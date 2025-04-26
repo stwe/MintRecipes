@@ -148,7 +148,7 @@ install_lazygit() {
 
 install_clion() {
     print_section "Installing CLion..."
-    clion_version=$(flatpak remote-info flathub com.jetbrains.CLion 2>/dev/null | grep -i "Version:" | awk '{print $2}')
+    clion_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
     if wget "https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz"; then
         mkdir -p ~/.clion
         tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion
@@ -160,7 +160,7 @@ install_clion() {
 
 install_idea() {
     print_section "Installing IntelliJ IDEA Community..."
-    idea_version=$(flatpak remote-info flathub com.jetbrains.IntelliJ-IDEA-Community 2>/dev/null | grep -i "Version:" | awk '{print $2}')
+    idea_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
     if wget "https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz"; then
         mkdir -p ~/.idea
         tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea
