@@ -305,10 +305,16 @@ setup_appearance() {
 [[ $OPTIONS == *"bittorrent_remove"* ]] && remove_bittorrent
 
 # ################################################
+# Firewall && Theme
+# ################################################
+
+setup_firewall
+setup_appearance
+
+# ################################################
 # Clean up
 # ################################################
 
-# Cleanup at the very end
 print_section "Cleaning up..."
 sudo apt autoremove -y
 
