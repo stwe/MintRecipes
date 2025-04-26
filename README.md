@@ -35,7 +35,7 @@ The script installs and configures:
   - [Kora icon theme](https://github.com/bikass/kora.git)
   - [WhiteSur-Dark GTK theme](https://github.com/vinceliuice/WhiteSur-gtk-theme.git)
   - Nerd fonts
-  - A custom wallpaper
+  - A custom wallpaper from [WallpapersCraft](https://wallpaperscraft.com)
 
 - **Security**:
   - UFW firewall setup

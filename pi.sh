@@ -4,8 +4,8 @@
 # PRE INSTALL BACKUP
 # ################################################
 # Thunderbird
-# Chrome bookmarks
-# KeepassXC file
+# Chrome bookmarks or use Floccus
+# KeepassXC file + keyfile
 # Bilder, Dokumente, Videos, CLionProjects
 # ################################################
 
@@ -232,8 +232,7 @@ print_section "It's probably a good idea to restart your computer."
 # 1) Create SSH Key
 # 2) Setup gocrytpfs
 # 3) Zsh / oh-my-zsh
-# 4) nordvpn login / nordvpn connect
-# 5) KeepassXC
+# 4) KeepassXC
 
 # ################################################
 # 1) Create SSH Key
