@@ -46,13 +46,13 @@ The script installs and configures:
 ### 1. Make the script executable:
 
 ```bash
-chmod +x ./pi.sh
+chmod +x ./install.sh
 ```
 
 ### 2. Run it:
 
 ```bash
-./pi.sh
+./install.sh
 ```
 
 ## ⚠️ Disclaimer
