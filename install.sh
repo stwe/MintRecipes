@@ -69,7 +69,7 @@ fi
 # ################################################
 
 if [ "$ALL_INSTALL" = true ]; then
-    OPTIONS="update essential monitoring terminal devtools neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode firefox_remove bittorrent_remove"
+    OPTIONS="update essential monitoring terminal devtools neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming firefox_remove bittorrent_remove"
 else
     OPTIONS=$(whiptail --title "Installation Menu" --checklist \
     "Select the components you want to install:" 20 78 15 \
@@ -89,6 +89,7 @@ else
     "nordvpn" "NordVPN Setup" OFF \
     "docker" "Docker Engine" OFF \
     "vscode" "Visual Studio Code" OFF \
+    "gaming" "Steam" OFF \
     "firefox_remove" "Remove Firefox" ON \
     "bittorrent_remove" "Remove BitTorrent client (Transmission)" ON 3>&1 1>&2 2>&3)
 
@@ -221,6 +222,13 @@ install_vscode() {
     sudo apt install -y code
 }
 
+install_gaming() {
+    print_section "Installing Steam..."
+    sudo apt install -y steam-devices
+    sudo flatpak install -y com.valvesoftware.Steam
+    sudo flatpak install -y net.lutris.Lutris
+}
+
 remove_firefox() {
     print_section "Removing Firefox..."
     sudo apt purge -y firefox firefox-locale-*
@@ -301,6 +309,7 @@ setup_appearance() {
 [[ $OPTIONS == *"nordvpn"* ]] && install_nordvpn
 [[ $OPTIONS == *"docker"* ]] && install_docker
 [[ $OPTIONS == *"vscode"* ]] && install_vscode
+[[ $OPTIONS == *"gaming"* ]] && install_gaming
 [[ $OPTIONS == *"firefox_remove"* ]] && remove_firefox
 [[ $OPTIONS == *"bittorrent_remove"* ]] && remove_bittorrent
 
