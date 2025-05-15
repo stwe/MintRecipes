@@ -1,64 +1,89 @@
-# 🐧 Linux Mint Post-Install Script
+# 🧰 Linux Mint Post-Installation Setup Script
 
-This script automates my typical post-installation setup on **Linux Mint**.
+A comprehensive Bash script to automate post-installation setup for **Linux Mint**.  
+Includes essential tools, development environments, appearance tweaks, and application installation — all selectable via a friendly **whiptail** interface or a `--all` flag.
 
-It installs a wide range of tools and applications, applies system themes, and configures useful defaults – so you can get straight to work without the hassle.
+---
 
-## ✅ Features
+## ✨ Features
 
-The script installs and configures:
+- Easy interactive selection or full automation (`--all`)
+- System update and essential utilities
+- Developer tools (Neovim, Git, LazyVim, Lazygit, Docker, etc.)
+- IDEs: IntelliJ IDEA, CLion, Visual Studio Code
+- Alternative terminal setup (Alacritty + Zsh)
+- Multimedia and messaging apps
+- Flatpak-based gaming setup (Steam, Lutris)
+- Optional removal of Firefox and BitTorrent client
+- NordVPN installation
+- Nextcloud + gocryptfs
+- Firewall setup (UFW)
+- Desktop theming:
+  - **Kora** icons
+  - **WhiteSur** GTK theme
+  - **JetBrainsMono Nerd Font**
+  - Wallpaper configuration
 
-- **Browsers**:
-  - Google Chrome
-
-- **Development tools**:
-  - CLion
-  - IntelliJ IDEA Community Edition
-  - Visual Studio Code
-  - Git, Neovim (with LazyVim), Lazygit, CMake, JRE, Docker
-
-- **Utilities**:
-  - htop, mc, KeepassXC, Alacritty, Zsh, GParted, smartmontools, sensors, etc.
-
-- **Multimedia**:
-  - VLC
-  - GIMP (with German help files)
-
-- **Cloud & Sync**:
-  - Nextcloud client
-  - gocryptfs
-
-- **Messaging**:
-  - A WhatsApp desktop client ([WasIstLos](https://github.com/xeco23/WasIstLos))
-
-- **Aesthetics**:
-  - [Kora icon theme](https://github.com/bikass/kora.git)
-  - [WhiteSur-Dark GTK theme](https://github.com/vinceliuice/WhiteSur-gtk-theme.git)
-  - Nerd fonts
-  - A custom wallpaper from [WallpapersCraft](https://wallpaperscraft.com)
-
-- **Security**:
-  - UFW firewall setup
-  - NordVPN install support
+---
 
 ## 🚀 Usage
 
-### 1. Make the script executable:
+### 1. Download the script
 
 ```bash
-chmod +x ./install.sh
+curl -O https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/install.sh
+chmod +x install.sh
 ```
 
-### 2. Run it:
+### 2. Run the script
+
+#### With interactive menu:
 
 ```bash
 ./install.sh
 ```
 
+#### Install everything (non-interactive):
+
+```bash
+./install.sh --all
+```
+
+---
+
+## 📋 Prerequisites
+
+- Linux Mint (tested with current versions)
+- Sudo privileges
+- Internet connection
+
+The script checks for required tools and installs them if needed (`whiptail`, `flatpak`, etc.).
+
+---
+
+## 🗂️ Structure
+
+Each feature group is modular, handled in its own function inside the script.  
+Selected options are applied in the order defined in the menu.
+
+---
+
+## 💡 Notes
+
+- The script creates folders like `~/Bilder`, `~/.local/bin`, `~/.config`, etc.
+- Fonts and themes are downloaded from GitHub and applied automatically.
+- Some tools (e.g. `Lazygit`, `CLion`) fetch the latest version dynamically.
+
+---
+
 ## ⚠️ Disclaimer
 
-This script makes system-level changes and installs third-party software. Use at your own risk and always review the contents before execution.
+Use this script at your own risk.  
+While it has been tested with Linux Mint, system configurations may vary.  
+Review the code before executing.
 
-## 📂 License
+---
 
-MIT – feel free to adapt or contribute.
+## ✅ License
+
+MIT License
