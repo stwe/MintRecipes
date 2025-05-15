@@ -227,6 +227,8 @@ install_gaming() {
     sudo apt install -y steam-devices
     sudo flatpak install -y com.valvesoftware.Steam
     sudo flatpak install -y net.lutris.Lutris
+    sudo flatpak install -y net.davidotek.pupgui2
+    sudo flatpak install -y com.github.tchx84.Flatseal
 }
 
 remove_firefox() {
