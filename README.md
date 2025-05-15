@@ -31,7 +31,8 @@ Includes essential tools, development environments, appearance tweaks, and appli
 ### 1. Download the script
 
 ```bash
-curl -O https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/install.sh
+git clone https://github.com/stwe/MintRecipes.git
+cd MintRecipes
 chmod +x install.sh
 ```
 
