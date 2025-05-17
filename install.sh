@@ -69,7 +69,7 @@ fi
 # ################################################
 
 if [ "$ALL_INSTALL" = true ]; then
-    OPTIONS="update essential monitoring terminal devtools neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming firefox_remove bittorrent_remove"
+    OPTIONS="update essential monitoring terminal devtools neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming virt_manager firefox_remove bittorrent_remove"
 else
     OPTIONS=$(whiptail --title "Installation Menu" --checklist \
     "Select the components you want to install:" 20 78 15 \
@@ -90,6 +90,7 @@ else
     "docker" "Docker Engine" OFF \
     "vscode" "Visual Studio Code" OFF \
     "gaming" "Steam" OFF \
+    "virt_manager" "Manage virtual machines with virt-manager" OFF \
     "firefox_remove" "Remove Firefox" ON \
     "bittorrent_remove" "Remove BitTorrent client (Transmission)" ON 3>&1 1>&2 2>&3)
 
@@ -250,6 +251,11 @@ install_gaming() {
     sudo flatpak install -y com.github.tchx84.Flatseal
 }
 
+install_libvirt() {
+    print_section "Installing virt-manager..."
+    sudo apt install -y virt-manager
+}
+
 remove_firefox() {
     print_section "Removing Firefox..."
     sudo apt purge -y firefox firefox-locale-*
@@ -331,6 +337,7 @@ setup_appearance() {
 [[ $OPTIONS == *"docker"* ]] && install_docker
 [[ $OPTIONS == *"vscode"* ]] && install_vscode
 [[ $OPTIONS == *"gaming"* ]] && install_gaming
+[[ $OPTIONS == *"virt_manager"* ]] && install_libvirt
 [[ $OPTIONS == *"firefox_remove"* ]] && remove_firefox
 [[ $OPTIONS == *"bittorrent_remove"* ]] && remove_bittorrent
 
