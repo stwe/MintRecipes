@@ -112,7 +112,7 @@ install_update() {
 
 install_essential() {
     print_section "Installing essential tools..."
-    sudo apt install -y htop mc neofetch wget curl keepassxc unrar tree gparted grub2-theme-mint putty apt-transport-https ca-certificates unzip vulkan-tools
+    sudo apt install -y htop mc neofetch wget curl keepassxc unrar tree gparted grub2-theme-mint putty apt-transport-https ca-certificates unzip vulkan-tools cpu-checker
 }
 
 install_monitoring() {
@@ -152,11 +152,20 @@ install_clion() {
     clion_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
     if wget "https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz"; then
         mkdir -p ~/.clion
-        tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion
+        tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion --strip-components=1
         rm CLion-${clion_version}.tar.gz
     else
         print_error "Download of CLion ${clion_version} failed."
     fi
+    mkdir -p ~/.local/share/nemo/actions
+    cat <<EOF > ~/.local/share/nemo/actions/open_in_clion.nemo_action
+[Nemo Action]
+Name=Öffnen in CLion
+Exec=$HOME/.clion/bin/clion %F
+Icon=com.jetbrains.CLion
+Selection=any
+Extensions=any;
+EOF
 }
 
 install_idea() {
@@ -216,10 +225,20 @@ install_vscode() {
     print_section "Installing Visual Studio Code..."
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
     sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
-    echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
     rm -f packages.microsoft.gpg
     sudo apt update
     sudo apt install -y code
+    mkdir -p ~/.local/share/nemo/actions
+    cat <<EOF > ~/.local/share/nemo/actions/open_in_vscode.nemo_action
+[Nemo Action]
+Name=Öffnen in VS Code
+Exec=code %F
+Icon=com.visualstudio.code
+Selection=any
+Extensions=any;
+Dependencies=code;
+EOF
 }
 
 install_gaming() {
