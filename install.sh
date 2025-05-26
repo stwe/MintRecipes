@@ -69,7 +69,7 @@ fi
 # ################################################
 
 if [ "$ALL_INSTALL" = true ]; then
-    OPTIONS="update essential monitoring terminal devtools neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming virt_manager firefox_remove bittorrent_remove"
+    OPTIONS="update essential monitoring terminal devtools pge_deps neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming virt_manager firefox_remove bittorrent_remove"
 else
     OPTIONS=$(whiptail --title "Installation Menu" --checklist \
     "Select the components you want to install:" 20 78 15 \
@@ -78,6 +78,7 @@ else
     "monitoring" "Monitoring Tools" ON \
     "terminal" "Alternative terminal Alacritty, Zsh" ON \
     "devtools" "Development Tools" ON \
+    "pge_deps" "olcPixelGameEngine dependencies" OFF \
     "neovim" "Neovim with LazyVim" ON \
     "lazygit" "Lazygit (Git UI)" ON \
     "clion" "CLion IDE" OFF \
@@ -130,6 +131,11 @@ install_devtools() {
     print_section "Installing development tools..."
     sudo apt install -y build-essential git cmake default-jre doxygen graphviz doxygen-gui
     cp -R .config/alacritty ~/.config
+}
+
+install_pge_deps() {
+    print_section "Installing olcPixelGameEngine dependencies..."
+    sudo apt install -y libx11-dev libgl1-mesa-dev libpng-dev
 }
 
 install_neovim() {
@@ -325,6 +331,7 @@ setup_appearance() {
 [[ $OPTIONS == *"monitoring"* ]] && install_monitoring
 [[ $OPTIONS == *"terminal"* ]] && install_terminal
 [[ $OPTIONS == *"devtools"* ]] && install_devtools
+[[ $OPTIONS == *"pge_deps"* ]] && install_pge_deps
 [[ $OPTIONS == *"neovim"* ]] && install_neovim
 [[ $OPTIONS == *"lazygit"* ]] && install_lazygit
 [[ $OPTIONS == *"clion"* ]] && install_clion
