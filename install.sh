@@ -69,7 +69,7 @@ fi
 # ################################################
 
 if [ "$ALL_INSTALL" = true ]; then
-    OPTIONS="update essential monitoring terminal devtools pge_deps neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming virt_manager firefox_remove bittorrent_remove"
+    OPTIONS="update essential monitoring terminal devtools pge_deps neovim lazygit clion idea chrome messenger multimedia nextcloud nordvpn docker vscode gaming xanmod virt_manager firefox_remove bittorrent_remove"
 else
     OPTIONS=$(whiptail --title "Installation Menu" --checklist \
     "Select the components you want to install:" 20 78 15 \
@@ -91,6 +91,7 @@ else
     "docker" "Docker Engine" OFF \
     "vscode" "Visual Studio Code" OFF \
     "gaming" "Steam" OFF \
+    "xanmod" "XanMod Kernel V3" OFF \
     "virt_manager" "Manage virtual machines with virt-manager" OFF \
     "firefox_remove" "Remove Firefox" ON \
     "bittorrent_remove" "Remove BitTorrent client (Transmission)" ON 3>&1 1>&2 2>&3)
@@ -257,6 +258,14 @@ install_gaming() {
     sudo flatpak install -y com.github.tchx84.Flatseal
 }
 
+install_xanmod() {
+    print_section "Installing XanMod Kernel V3..."
+    wget -qO - https://dl.xanmod.org/archive.key | sudo gpg --dearmor -vo /etc/apt/keyrings/xanmod-archive-keyring.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/xanmod-archive-keyring.gpg] http://deb.xanmod.org $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/xanmod-release.list
+    sudo apt update
+    sudo apt install -y linux-xanmod-x64v3
+}
+
 install_libvirt() {
     print_section "Installing virt-manager..."
     sudo apt install -y virt-manager
@@ -344,6 +353,7 @@ setup_appearance() {
 [[ $OPTIONS == *"docker"* ]] && install_docker
 [[ $OPTIONS == *"vscode"* ]] && install_vscode
 [[ $OPTIONS == *"gaming"* ]] && install_gaming
+[[ $OPTIONS == *"xanmod"* ]] && install_xanmod
 [[ $OPTIONS == *"virt_manager"* ]] && install_libvirt
 [[ $OPTIONS == *"firefox_remove"* ]] && remove_firefox
 [[ $OPTIONS == *"bittorrent_remove"* ]] && remove_bittorrent
