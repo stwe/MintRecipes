@@ -126,12 +126,12 @@ install_monitoring() {
 install_terminal() {
     print_section "Installing alternative terminal..."
     sudo apt install -y alacritty zsh
+    cp -R .config/alacritty ~/.config
 }
 
 install_devtools() {
     print_section "Installing development tools..."
-    sudo apt install -y build-essential git cmake default-jre doxygen graphviz doxygen-gui
-    cp -R .config/alacritty ~/.config
+    sudo apt install -y build-essential git cmake default-jre doxygen graphviz doxygen-gui clangd
 }
 
 install_pge_deps() {
