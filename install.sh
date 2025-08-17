@@ -328,7 +328,11 @@ setup_appearance() {
     gsettings set org.cinnamon.desktop.interface icon-theme "kora"
     gsettings set org.cinnamon.desktop.interface gtk-theme "WhiteSur-Dark"
     gsettings set org.cinnamon.theme name "WhiteSur-Dark"
-    gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+
+    # Only set Alacritty if terminal was selected
+    if [[ $OPTIONS == *"terminal"* ]]; then
+        gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+    fi
 }
 
 # ################################################
