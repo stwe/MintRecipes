@@ -317,7 +317,7 @@ setup_appearance() {
 
     # Download wallpaper
     print_section "Downloading wallpaper..."
-    wallpaper_file_name="waterfall_grass_nature_92753_1920x1200.jpg"
+    wallpaper_file_name="buildings_village_lake_192651_1920x1080.jpg"
     wallpaper_image_path="file://$HOME/Bilder/$wallpaper_file_name"
     cd ~/Bilder
     wget -nc https://images.wallpaperscraft.com/image/single/${wallpaper_file_name}
