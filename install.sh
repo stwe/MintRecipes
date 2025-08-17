@@ -170,7 +170,7 @@ install_clion() {
 [Nemo Action]
 Name=Öffnen in CLion
 Exec=$HOME/.clion/bin/clion %F
-Icon=com.jetbrains.CLion
+Icon-Name=com.jetbrains.CLion
 Selection=any
 Extensions=any;
 EOF
@@ -242,7 +242,7 @@ install_vscode() {
 [Nemo Action]
 Name=Öffnen in VS Code
 Exec=code %F
-Icon=com.visualstudio.code
+Icon-Name=com.visualstudio.code
 Selection=any
 Extensions=any;
 Dependencies=code;
