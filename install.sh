@@ -385,9 +385,9 @@ setup_appearance() {
     gsettings set org.cinnamon.theme name "WhiteSur-Dark"
 
     gsettings set org.cinnamon.desktop.interface font-name "Inter Regular 10"
-    gsettings set org.cinnamon.desktop.interface document-font-name "Inter Regular 10"
-    gsettings set org.cinnamon.desktop.interface monospace-font-name "JetBrains Mono Regular 10"
-    gsettings set org.cinnamon.desktop.interface desktop-font-name "Inter Regular 10"
+    gsettings set org.gnome.desktop.interface document-font-name "Inter Regular 10"
+    gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono Regular 10"
+    gsettings set org.gnome.desktop.interface desktop-font-name "Inter Regular 10"
     gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Inter Display Regular 10"
 
     gsettings set org.cinnamon.desktop.interface font-antialiasing "rgba"
