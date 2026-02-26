@@ -259,7 +259,7 @@ install_nextcloud() {
 
 install_nordvpn() {
     print_section "Installing NordVPN"
-    curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh | sh
+    sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
 }
 
 install_docker() {
