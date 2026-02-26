@@ -73,7 +73,7 @@ install_apt_packages() {
 }
 
 is_selected() {
-    [[ " $OPTIONS " =~ " $1 " ]]
+    echo "$OPTIONS" | grep -qw "\"$1\""
 }
 
 ################################################
