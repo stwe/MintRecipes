@@ -373,7 +373,7 @@ setup_appearance() {
     print_section "Downloading icons"
     cd ~/.icons
     if [ ! -d kora ]; then
-        git clone https://github.com/bikass/kora.git kora
+        git clone https://github.com/bikass/kora.git .
     fi
     rm -rf .git .github
 
@@ -472,3 +472,7 @@ sudo apt autoremove -y
 print_success "Installation completed. Have fun with Linux Mint! 🎉"
 print_success "It's probably a good idea to restart your computer."
 print_success "Log file: $LOGFILE"
+
+# TODO
+# Schreibtischschrift muss gesetzt werden
+# Hinting auf Mittel muss ueber die Gui gesetzt werden
