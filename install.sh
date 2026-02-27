@@ -265,6 +265,9 @@ install_nordvpn() {
 install_docker() {
     print_section "Installing Docker"
 
+    # Get Ubuntu base codename (important for Mint)
+    UBUNTU_BASE_CODENAME=$(grep UBUNTU_CODENAME /etc/os-release | cut -d= -f2)
+
     # Keyring directory
     sudo install -m 0755 -d /etc/apt/keyrings
 
@@ -272,11 +275,11 @@ install_docker() {
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
     sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-    # Add repository using modern .sources format
+    # Add repository
     sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
 Types: deb
 URIs: https://download.docker.com/linux/ubuntu
-Suites: $UBUNTU_CODENAME
+Suites: $UBUNTU_BASE_CODENAME
 Components: stable
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
