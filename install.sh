@@ -418,9 +418,6 @@ setup_appearance() {
     gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono Regular 10"
     gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Inter Display Regular 10"
 
-    gsettings set org.cinnamon.desktop.interface font-antialiasing "rgba"
-    gsettings set org.cinnamon.desktop.interface font-rgba-order "rgb"
-    gsettings set org.cinnamon.desktop.interface font-hinting "medium"
     gsettings set org.cinnamon.desktop.interface text-scaling-factor 1.0
 
     # Only set Alacritty if terminal was selected
