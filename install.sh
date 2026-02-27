@@ -228,7 +228,7 @@ install_idea() {
 }
 
 install_chrome() {
-    print_section "Installing Google Chrome..."
+    print_section "Installing Google Chrome"
     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     install_apt_packages ./google-chrome-stable_current_amd64.deb
     rm google-chrome-stable_current_amd64.deb
@@ -263,17 +263,42 @@ install_nordvpn() {
 }
 
 install_docker() {
-    print_section "Installing Docker..."
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker.gpg] \
-    https://download.docker.com/linux/ubuntu $UBUNTU_CODENAME stable" \
-    | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    print_section "Installing Docker"
+
+    # Keyring directory
+    sudo install -m 0755 -d /etc/apt/keyrings
+
+    # Add Docker’s official GPG key
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+    # Add repository using modern .sources format
+    sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $UBUNTU_CODENAME
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
     sudo apt update
-    install_apt_packages docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    install_apt_packages \
+        docker-ce \
+        docker-ce-cli \
+        containerd.io \
+        docker-buildx-plugin \
+        docker-compose-plugin
+
+    # Add current user to docker group
+    sudo usermod -aG docker "$USER"
+
+    print_success "Docker installed successfully."
+    print_success "Log out and log back in so docker group permissions apply."
 }
 
 install_vscode() {
-    print_section "Installing Visual Studio Code..."
+    print_section "Installing Visual Studio Code"
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
     sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
@@ -292,6 +317,7 @@ Dependencies=code;
 EOF
 }
 
+# oder native Pakete nehmen
 install_gaming() {
     print_section "Installing Steam"
     install_apt_packages steam-devices
