@@ -61,13 +61,6 @@ UBUNTU_CODENAME=$(lsb_release -cs)
 # HELPERS
 ################################################
 
-require_command() {
-    command -v "$1" >/dev/null 2>&1 || {
-        print_error "$1 is required but not installed."
-        exit 1
-    }
-}
-
 install_apt_packages() {
     sudo apt install -y "$@"
 }
@@ -80,14 +73,10 @@ is_selected() {
 # PREP
 ################################################
 
-require_command flatpak
-
 if ! command -v whiptail >/dev/null; then
     sudo apt update
     install_apt_packages whiptail
 fi
-
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 mkdir -p ~/Bilder ~/.local/bin ~/.config ~/.fonts ~/.icons ~/.themes
 
@@ -164,7 +153,7 @@ install_essential() {
         htop mc neofetch wget curl keepassxc \
         unrar tree gparted \
         grub2-theme-mint putty apt-transport-https ca-certificates \
-        unzip vulkan-tools cpu-checker
+        unzip cpu-checker
 }
 
 install_monitoring() {
@@ -320,14 +309,35 @@ Dependencies=code;
 EOF
 }
 
-# oder native Pakete nehmen
 install_gaming() {
-    print_section "Installing Steam"
-    install_apt_packages steam-devices
-    flatpak install -y flathub com.valvesoftware.Steam
-    flatpak install -y flathub net.lutris.Lutris
-    flatpak install -y flathub net.davidotek.pupgui2
-    flatpak install -y flathub com.github.tchx84.Flatseal
+    print_section "Installing Native Gaming Stack (AMD)"
+
+    # Enable 32-bit support (required for Steam & Proton)
+    if ! dpkg --print-foreign-architectures | grep -q i386; then
+        sudo dpkg --add-architecture i386
+        sudo apt update
+    fi
+
+    # Steam
+    install_apt_packages steam steam-devices
+
+    # Vulkan / Mesa stack (AMD)
+    install_apt_packages \
+        mesa-vulkan-drivers \
+        mesa-utils \
+        vulkan-tools \
+        libvulkan1 \
+        libvulkan1:i386
+
+    # Performance tools
+    install_apt_packages \
+        gamemode \
+        mangohud \
+        goverlay
+
+    sudo systemctl enable gamemoded 2>/dev/null || true
+
+    print_success "Native AMD gaming stack installed."
 }
 
 install_xanmod() {
@@ -476,3 +486,4 @@ print_success "Log file: $LOGFILE"
 # TODO
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
+# sleep 2 nach font update?
