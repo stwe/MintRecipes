@@ -408,6 +408,7 @@ setup_appearance() {
     rm JetBrainsMono.zip
     install_apt_packages fonts-inter fonts-jetbrains-mono fonts-symbola
     fc-cache -f
+    sleep 3
 
     # Download wallpaper
     print_section "Downloading wallpaper"
@@ -434,6 +435,50 @@ setup_appearance() {
     if [[ $OPTIONS == *"terminal"* ]]; then
         gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
     fi
+}
+
+setup_dock() {
+    print_section "Setting up panels"
+
+    # Install Plank Reloaded (zquestz repo)
+    if ! dpkg -l | grep -q plank-reloaded; then
+        curl -fsSL https://zquestz.github.io/ppa/ubuntu/KEY.gpg \
+            | sudo gpg --dearmor -o /usr/share/keyrings/zquestz-archive-keyring.gpg
+
+        echo "deb [signed-by=/usr/share/keyrings/zquestz-archive-keyring.gpg] https://zquestz.github.io/ppa/ubuntu ./" \
+            | sudo tee /etc/apt/sources.list.d/zquestz.list
+
+        sudo apt update
+        install_apt_packages plank-reloaded
+    fi
+
+    # Autostart Dock
+    cp /usr/share/applications/plank.desktop ~/.config/autostart/ 2>/dev/null || true
+
+    # Panels: Only ONE top panel
+    gsettings set org.cinnamon panels-enabled "['1:0:top']"
+    gsettings set org.cinnamon panels-height "['1:26']"
+    gsettings set org.cinnamon panels-autohide "['1:false']"
+
+    # Applets
+    gsettings set org.cinnamon enabled-applets \
+        "['panel1:left:0:menu@cinnamon.org:0',
+        'panel1:left:1:separator@cinnamon.org:1',
+        'panel1:left:2:grouped-window-list@cinnamon.org:2',
+        'panel1:right:0:systray@cinnamon.org:3',
+        'panel1:right:1:xapp-status@cinnamon.org:4',
+        'panel1:right:2:notifications@cinnamon.org:5',
+        'panel1:right:3:printers@cinnamon.org:6',
+        'panel1:right:4:removable-drives@cinnamon.org:7',
+        'panel1:right:5:keyboard@cinnamon.org:8',
+        'panel1:right:6:favorites@cinnamon.org:9',
+        'panel1:right:7:network@cinnamon.org:10',
+        'panel1:right:8:sound@cinnamon.org:11',
+        'panel1:right:9:power@cinnamon.org:12',
+        'panel1:right:10:calendar@cinnamon.org:13',
+        'panel1:right:11:cornerbar@cinnamon.org:14',
+        'panel1:right:12:Sensors@claudiux:15',
+        'panel1:right:13:bash-sensors@pkkk:17']"
 }
 
 # ################################################
@@ -467,6 +512,7 @@ is_selected bittorrent_remove && remove_bittorrent
 
 setup_firewall
 setup_appearance
+setup_dock
 
 # ################################################
 # Clean up
@@ -486,4 +532,3 @@ print_success "Log file: $LOGFILE"
 # TODO
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
-# sleep 2 nach font update?
