@@ -166,6 +166,7 @@ install_terminal() {
     install_apt_packages alacritty zsh
     if [ -d "$SCRIPT_DIR/.config/alacritty" ]; then
         cp -R "$SCRIPT_DIR/.config/alacritty" ~/.config/
+        chown -R "$USER:$USER" ~/.config/alacritty
     fi
 }
 
@@ -410,16 +411,10 @@ setup_appearance() {
     fc-cache -f
     sleep 3
 
-    # Download wallpaper
-    print_section "Downloading wallpaper"
-    wallpaper_file_name="buildings_village_lake_192651_1920x1080.jpg"
-    wallpaper_image_path="file://$HOME/Bilder/$wallpaper_file_name"
-    cd ~/Bilder
-    wget -nc https://images.wallpaperscraft.com/image/single/${wallpaper_file_name}
-
     # Apply settings
-    print_section "Applying desktop and font settings..."
-    gsettings set org.cinnamon.desktop.background picture-uri "$wallpaper_image_path"
+    print_section "Applying desktop and font settings"
+    WALLPAPER="/usr/share/backgrounds/linuxmint-wallpapers/jbaer_wave.jpg"
+    gsettings set org.cinnamon.desktop.background picture-uri "file://$WALLPAPER"
     gsettings set org.cinnamon.desktop.interface icon-theme "kora"
     gsettings set org.cinnamon.desktop.interface gtk-theme "WhiteSur-Dark"
     gsettings set org.cinnamon.theme name "WhiteSur-Dark"
@@ -501,17 +496,36 @@ EOF
         'panel1:right:10:calendar@cinnamon.org:13',
         'panel1:right:11:cornerbar@cinnamon.org:14',
         'panel1:right:12:Sensors@claudiux:15',
-        'panel1:right:13:bash-sensors@pkkk:17']"
+        'panel1:right:13:bash-sensors@pkkk:16']"
+
+    # Bash Sensors config
+    SOURCE_SENSOR_CONFIG="$SCRIPT_DIR/.config/cinnamon/spices/bash-sensors@pkkk/config.json"
+
+    if [ -f "$SOURCE_SENSOR_CONFIG" ]; then
+        INSTANCE_ID=$(gsettings get org.cinnamon enabled-applets \
+            | grep -o "bash-sensors@pkkk:[0-9]*" \
+            | grep -o "[0-9]*")
+
+        if [ -n "$INSTANCE_ID" ]; then
+
+            TARGET_SENSOR_DIR="$HOME/.config/cinnamon/spices/bash-sensors@pkkk"
+            mkdir -p "$TARGET_SENSOR_DIR"
+
+            cp "$SOURCE_SENSOR_CONFIG" "$TARGET_SENSOR_DIR/${INSTANCE_ID}.json"
+            chmod 644 "$TARGET_SENSOR_DIR/${INSTANCE_ID}.json"
+
+            print_success "Bash Sensors config applied to instance $INSTANCE_ID."
+
+        else
+            print_error "Could not determine bash-sensors instance ID."
+        fi
+    else
+        print_error "Source bash-sensors config not found."
+    fi
 
     # Plank Reloaded settings
     gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ icon-size 36
     gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme 'Gtk+'
-}
-
-reload_cinnamon() {
-    print_section "Reloading Cinnamon"
-    nohup cinnamon --replace >/dev/null 2>&1 &
-    sleep 3
 }
 
 # ################################################
@@ -546,7 +560,6 @@ is_selected bittorrent_remove && remove_bittorrent
 setup_firewall
 setup_appearance
 setup_dock
-reload_cinnamon
 
 # ################################################
 # Clean up
@@ -567,4 +580,3 @@ print_success "Log file: $LOGFILE"
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
 # set zsh config
-# config sensors
