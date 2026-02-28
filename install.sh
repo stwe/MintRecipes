@@ -494,9 +494,8 @@ EOF
         'panel1:right:8:sound@cinnamon.org:11',
         'panel1:right:9:power@cinnamon.org:12',
         'panel1:right:10:calendar@cinnamon.org:13',
-        'panel1:right:11:cornerbar@cinnamon.org:14',
-        'panel1:right:12:Sensors@claudiux:15',
-        'panel1:right:13:bash-sensors@pkkk:16']"
+        'panel1:right:12:Sensors@claudiux:14',
+        'panel1:right:13:bash-sensors@pkkk:15']"
 
     # Bash Sensors config
     SOURCE_SENSOR_CONFIG="$SCRIPT_DIR/.config/cinnamon/spices/bash-sensors@pkkk/config.json"
