@@ -453,7 +453,17 @@ setup_dock() {
     fi
 
     # Autostart Dock
-    cp /usr/share/applications/plank.desktop ~/.config/autostart/ 2>/dev/null || true
+    mkdir -p ~/.config/autostart
+    cat > ~/.config/autostart/plank-reloaded.desktop <<EOF
+[Desktop Entry]
+Type=Application
+Exec=sh -c "sleep 3 && plank"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Plank Reloaded Dock
+Comment=Start Plank Reloaded Dock at login
+EOF
 
     # Panels: Only ONE top panel
     gsettings set org.cinnamon panels-enabled "['1:0:top']"
@@ -532,3 +542,4 @@ print_success "Log file: $LOGFILE"
 # TODO
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
+# set zsh config
