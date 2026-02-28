@@ -452,7 +452,7 @@ setup_dock() {
         install_apt_packages plank-reloaded
     fi
 
-    # Autostart Dock
+    # Plank Reloaded Autostart
     mkdir -p ~/.config/autostart
     cat > ~/.config/autostart/plank-reloaded.desktop <<EOF
 [Desktop Entry]
@@ -465,12 +465,25 @@ Name=Plank Reloaded Dock
 Comment=Start Plank Reloaded Dock at login
 EOF
 
-    # Panels: Only ONE top panel
+    # Only one top panel
     gsettings set org.cinnamon panels-enabled "['1:0:top']"
     gsettings set org.cinnamon panels-height "['1:26']"
     gsettings set org.cinnamon panels-autohide "['1:false']"
 
     # Applets
+    TARGET_DIR="$HOME/.local/share/cinnamon/applets"
+    mkdir -p "$TARGET_DIR"
+
+    # Bash Sensors
+    wget -q https://cinnamon-spices.linuxmint.com/files/applets/bash-sensors@pkkk.zip -O bash-sensors.zip
+    unzip -o bash-sensors.zip -d "$TARGET_DIR"
+
+    # Sensors@claudiux
+    wget -q https://cinnamon-spices.linuxmint.com/files/applets/Sensors@claudiux.zip -O sensors-claudiux.zip
+    unzip -o sensors-claudiux.zip -d "$TARGET_DIR"
+
+    rm bash-sensors.zip sensors-claudiux.zip
+
     gsettings set org.cinnamon enabled-applets \
         "['panel1:left:0:menu@cinnamon.org:0',
         'panel1:left:1:separator@cinnamon.org:1',
@@ -489,6 +502,16 @@ EOF
         'panel1:right:11:cornerbar@cinnamon.org:14',
         'panel1:right:12:Sensors@claudiux:15',
         'panel1:right:13:bash-sensors@pkkk:17']"
+
+    # Plank Reloaded settings
+    gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ icon-size 36
+    gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme 'Gtk+'
+}
+
+reload_cinnamon() {
+    print_section "Reloading Cinnamon"
+    nohup cinnamon --replace >/dev/null 2>&1 &
+    sleep 3
 }
 
 # ################################################
@@ -523,6 +546,7 @@ is_selected bittorrent_remove && remove_bittorrent
 setup_firewall
 setup_appearance
 setup_dock
+reload_cinnamon
 
 # ################################################
 # Clean up
@@ -543,3 +567,4 @@ print_success "Log file: $LOGFILE"
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
 # set zsh config
+# config sensors
