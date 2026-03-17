@@ -84,58 +84,32 @@ mkdir -p ~/Bilder ~/.local/bin ~/.config ~/.fonts ~/.icons ~/.themes
 # OPTIONS
 ################################################
 
-ALL_INSTALL=false
-if [[ "${1:-}" == "--all" ]]; then
-    ALL_INSTALL=true
-fi
-
-if [ "$ALL_INSTALL" = true ]; then
-    OPTIONS="\
-    update \
-    essential \
-    monitoring \
-    terminal \
-    devtools \
-    lazygit \
-    clion \
-    idea \
-    chrome \
-    messenger \
-    multimedia \
-    nextcloud \
-    nordvpn \
-    docker \
-    vscode \
-    gaming \
-    xanmod \
-    virt_manager \
-    firefox_remove \
-    bittorrent_remove"
-else
-    OPTIONS=$(whiptail --title "Mint Post Install" --checklist \
-    "Select components:" 20 78 15 \
-    "update" "System Update" ON \
-    "essential" "Essential Tools" ON \
-    "monitoring" "Monitoring Tools" ON \
-    "terminal" "Alacritty + Zsh" ON \
-    "devtools" "Build Tools" ON \
-    "lazygit" "Lazygit" ON \
-    "clion" "CLion IDE" OFF \
-    "idea" "IntelliJ IDEA Community Edition" OFF \
-    "chrome" "Google Chrome" ON \
-    "messenger" "Messenger Client (WasIstLos)" ON \
-    "multimedia" "VLC + GIMP" ON \
-    "nextcloud" "Nextcloud + gocryptfs" ON \
-    "nordvpn" "NordVPN" OFF \
-    "docker" "Docker Engine" OFF \
-    "vscode" "Visual Studio Code" OFF \
-    "gaming" "Steam + Tools" OFF \
-    "xanmod" "XanMod Kernel V3" OFF \
-    "virt_manager" "Manage virtual machines with virt-manager" OFF \
-    "firefox_remove" "Remove Firefox" ON \
-    "bittorrent_remove" "Remove BitTorrent client (Transmission)" ON \
-    3>&1 1>&2 2>&3) || exit 1
-fi
+OPTIONS=$(whiptail --title "Mint Post Install" --checklist \
+"Select components:" 20 78 15 \
+"update" "System Update" ON \
+"essential" "Essential Tools" ON \
+"monitoring" "Monitoring Tools" ON \
+"terminal" "Alacritty + Zsh" ON \
+"devtools" "Build Tools" ON \
+"lazygit" "Lazygit" ON \
+"clion" "CLion IDE" OFF \
+"idea" "IntelliJ IDEA Community Edition" OFF \
+"chrome" "Google Chrome" ON \
+"messenger" "Messenger Client (WasIstLos)" ON \
+"multimedia" "VLC + GIMP" ON \
+"nextcloud" "Nextcloud + gocryptfs" ON \
+"nordvpn" "NordVPN" OFF \
+"docker" "Docker Engine" OFF \
+"vscode" "Visual Studio Code" OFF \
+"gaming" "Steam + Tools" OFF \
+"xanmod" "XanMod Kernel V3" OFF \
+"firewall" "Setup Firewall" ON \
+"appearance" "Themes & Fonts" ON \
+"dock" "Plank Dock" ON \
+"virt_manager" "Manage virtual machines with virt-manager" OFF \
+"firefox_remove" "Remove Firefox" ON \
+"bittorrent_remove" "Remove BitTorrent client (Transmission)" ON \
+3>&1 1>&2 2>&3) || exit 1
 
 # ################################################
 # Install functions
@@ -551,14 +525,9 @@ is_selected xanmod && install_xanmod
 is_selected virt_manager && install_libvirt
 is_selected firefox_remove && remove_firefox
 is_selected bittorrent_remove && remove_bittorrent
-
-# ################################################
-# Firewall && Theme
-# ################################################
-
-setup_firewall
-setup_appearance
-setup_dock
+is_selected firewall && setup_firewall
+is_selected appearance && setup_appearance
+is_selected dock && setup_dock
 
 # ################################################
 # Clean up
@@ -576,6 +545,35 @@ print_success "It's probably a good idea to restart your computer."
 print_success "Log file: $LOGFILE"
 
 # TODO
+#     Abhängigkeiten berücksichtigen
+#     Überschriften
+#     Kitty + Yazi
+#     Zsh Plugins direkt ziehen
+#
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
 # set zsh config
+
+# Zram
+# sudo apt install zram-config
+# prüfen mit zramctl oder swapon --show
+# vm.swappiness=10
+# vm.vfs_cache_pressure=50
+# an das Ende von sudo nano /etc/sysctl.conf
+# aktivieren mit sudo sysctl -p
+
+# preload
+# sudo apt install preload
+# aktivieren mit sudo systemctl enable --now preload
+# prüfen systemctl status preload
+# config ist in /etc/preload.conf
+
+# BFQ tmp
+# echo bfq | sudo tee /sys/block/sda/queue/scheduler
+# echo bfq | sudo tee /sys/block/sdb/queue/scheduler
+# test cat /sys/block/sda/queue/scheduler
+# test  cat /sys/block/sdb/queue/scheduler
+
+# BFQ permanent
+# sudo nano /etc/udev/rules.d/60-ioschedulers.rules
+# einfügen: ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/scheduler}="bfq"
