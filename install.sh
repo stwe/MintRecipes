@@ -112,10 +112,11 @@ OPTIONS=$(whiptail --title "Mint Post Install" --checklist \
 "vscode" "Visual Studio Code" OFF \
 "gaming" "Steam + Tools" OFF \
 "xanmod" "XanMod Kernel V3" OFF \
+"performance" "Pimp my Mint (ZRAM, BFQ, Preload)" OFF \
 "firewall" "Setup Firewall" ON \
 "appearance" "Themes & Fonts" ON \
 "dock" "Plank Dock" ON \
-"virt_manager" "Manage virtual machines with virt-manager" OFF \
+"virt" "Manage virtual machines with virt-manager" OFF \
 "firefox_remove" "Remove Firefox" ON \
 "bittorrent_remove" "Remove BitTorrent client (Transmission)" ON \
 3>&1 1>&2 2>&3) || exit 1
@@ -335,7 +336,33 @@ install_xanmod() {
     install_apt_packages linux-xanmod-x64v3
 }
 
-install_libvirt() {
+install_performance() {
+    print_section "Optimizing Performance"
+    
+    # 1. ZRAM & Preload
+    install_apt_packages zram-config preload
+
+    if ! grep -q "vm.swappiness" /etc/sysctl.conf; then
+        sudo bash -c 'cat <<EOF >> /etc/sysctl.conf
+vm.swappiness=10
+vm.vfs_cache_pressure=50
+EOF'
+        sudo sysctl -p
+    fi
+
+    # 2. BFQ Scheduler
+    sudo bash -c 'cat <<EOF > /etc/udev/rules.d/60-ioschedulers.rules
+# NVMe (Samsung)
+ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/scheduler}="bfq"
+# SATA
+ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/scheduler}="bfq"
+EOF'
+    sudo udevadm control --reload-rules && sudo udevadm trigger
+
+    print_success "ZRAM, Preload and BFQ installed."
+}
+
+install_virt() {
     print_section "Installing virt-manager"
     install_apt_packages virt-manager
 }
@@ -350,7 +377,7 @@ remove_bittorrent() {
     sudo apt purge -y transmission-*
 }
 
-setup_firewall() {
+install_firewall() {
     print_section "Configuring firewall"
     install_apt_packages ufw
     sudo ufw default deny incoming
@@ -358,7 +385,7 @@ setup_firewall() {
     sudo ufw --force enable
 }
 
-setup_appearance() {
+install_appearance() {
     run_step "devtools"
     run_step "essential"
     if [[ "$XDG_CURRENT_DESKTOP" != *"Cinnamon"* ]]; then
@@ -420,7 +447,8 @@ setup_appearance() {
     fi
 }
 
-setup_dock() {
+install_dock() {
+    run_step "essential"
     print_section "Setting up panels"
 
     # Install Plank Reloaded (zquestz repo)
@@ -519,29 +547,30 @@ EOF
 # EXECUTION
 # ################################################
 
-is_selected update && install_update
-is_selected essential && install_essential
-is_selected monitoring && install_monitoring
-is_selected terminal && install_terminal
-is_selected devtools && install_devtools
-is_selected lazygit && install_lazygit
-is_selected clion && install_clion
-is_selected idea && install_idea
-is_selected chrome && install_chrome
-is_selected messenger && install_messenger
-is_selected multimedia && install_multimedia
-is_selected nextcloud && install_nextcloud
-is_selected nordvpn && install_nordvpn
-is_selected docker && install_docker
-is_selected vscode && install_vscode
-is_selected gaming && install_gaming
-is_selected xanmod && install_xanmod
-is_selected virt_manager && install_libvirt
+is_selected update && run_step update
+is_selected essential && run_step essential
+is_selected monitoring && run_step monitoring
+is_selected terminal && run_step terminal
+is_selected devtools && run_step devtools
+is_selected lazygit && run_step lazygit
+is_selected clion && run_step clion
+is_selected idea && run_step idea
+is_selected chrome && run_step chrome
+is_selected messenger && run_step messenger
+is_selected multimedia && run_step multimedia
+is_selected nextcloud && run_step nextcloud
+is_selected nordvpn && run_step nordvpn
+is_selected docker && run_step docker
+is_selected vscode && run_step vscode
+is_selected gaming && run_step gaming
+is_selected xanmod && run_step xanmod
+is_selected performance && run_step performance
+is_selected virt && run_step virt
 is_selected firefox_remove && remove_firefox
 is_selected bittorrent_remove && remove_bittorrent
-is_selected firewall && setup_firewall
-is_selected appearance && setup_appearance
-is_selected dock && setup_dock
+is_selected firewall && run_step firewall
+is_selected appearance && run_step appearance
+is_selected dock && run_step dock
 
 # ################################################
 # Clean up
