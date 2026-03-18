@@ -66,15 +66,23 @@ install_apt_packages() {
 }
 
 is_selected() {
-    echo "$OPTIONS" | grep -qw "\"$1\""
+    [[ $OPTIONS == *"\"$1\""* ]]
 }
 
-COMPLETED_STEPS=""
+COMPLETED_STEPS=()
 run_step() {
-    local step=$1
-    if [[ ! $COMPLETED_STEPS =~ " $step " ]]; then
+    local step="$1"
+
+    for s in "${COMPLETED_STEPS[@]}"; do
+        [[ "$s" == "$step" ]] && return
+    done
+
+    if declare -f "install_$step" > /dev/null; then
         "install_$step"
-        COMPLETED_STEPS="$COMPLETED_STEPS $step "
+        COMPLETED_STEPS+=("$step")
+    else
+        print_error "install_$step not found"
+        exit 1
     fi
 }
 
@@ -82,8 +90,9 @@ run_step() {
 # PREP
 ################################################
 
+sudo apt update
+
 if ! command -v whiptail >/dev/null; then
-    sudo apt update
     install_apt_packages whiptail
 fi
 
@@ -95,7 +104,6 @@ mkdir -p ~/Bilder ~/.local/bin ~/.config ~/.fonts ~/.icons ~/.themes
 
 OPTIONS=$(whiptail --title "Mint Post Install" --checklist \
 "Select components:" 20 78 15 \
-"update" "System Update" ON \
 "essential" "Essential Tools" ON \
 "monitoring" "Monitoring Tools" ON \
 "terminal" "Alacritty + Zsh" ON \
@@ -196,7 +204,7 @@ install_idea() {
     idea_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
     if wget "https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz"; then
         mkdir -p ~/.idea
-        tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea
+        tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea --strip-components=1
         rm ideaIC-${idea_version}.tar.gz
     else
         print_error "Download of IntelliJ IDEA ${idea_version} failed."
@@ -242,8 +250,9 @@ install_docker() {
     run_step "essential"
     print_section "Installing Docker"
 
-    # Get Ubuntu base codename (important for Mint)
-    UBUNTU_BASE_CODENAME=$(grep UBUNTU_CODENAME /etc/os-release | cut -d= -f2)
+    # Get Ubuntu base codename
+    source /etc/os-release
+    UBUNTU_BASE_CODENAME=$UBUNTU_CODENAME
 
     # Keyring directory
     sudo install -m 0755 -d /etc/apt/keyrings
@@ -317,7 +326,7 @@ install_gaming() {
         libvulkan1 \
         libvulkan1:i386
 
-    # Performance tools
+    # Tools
     install_apt_packages \
         gamemode \
         mangohud \
@@ -339,27 +348,40 @@ install_xanmod() {
 install_performance() {
     print_section "Optimizing Performance"
     
-    # 1. ZRAM & Preload
-    install_apt_packages zram-config preload
+    # Preload
+    install_apt_packages preload
 
-    if ! grep -q "vm.swappiness" /etc/sysctl.conf; then
-        sudo bash -c 'cat <<EOF >> /etc/sysctl.conf
+    # ZRAM
+    install_apt_packages systemd-zram-generator
+
+    # ZRAM Generator config
+    sudo tee /etc/systemd/zram-generator.conf > /dev/null <<EOF
+[zram0]
+zram-size = min(2048, ram / 4)
+compression-algorithm = zstd
+swap-priority = 100
+EOF
+
+    sudo systemctl daemon-reexec
+    sudo systemctl restart systemd-zram-setup@zram0.service || true
+
+    # Sysctl
+    sudo tee /etc/sysctl.d/99-mint-performance.conf > /dev/null <<EOF
 vm.swappiness=10
 vm.vfs_cache_pressure=50
-EOF'
-        sudo sysctl -p
-    fi
+EOF
 
-    # 2. BFQ Scheduler
-    sudo bash -c 'cat <<EOF > /etc/udev/rules.d/60-ioschedulers.rules
-# NVMe (Samsung)
-ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/scheduler}="bfq"
-# SATA
-ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/scheduler}="bfq"
-EOF'
-    sudo udevadm control --reload-rules && sudo udevadm trigger
+    sudo sysctl --system
 
-    print_success "ZRAM, Preload and BFQ installed."
+    # BFQ only for SATA
+    sudo tee /etc/udev/rules.d/60-ioschedulers.rules > /dev/null <<EOF
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="bfq"
+EOF
+
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger
+
+    print_success "Performance tuning applied."
 }
 
 install_virt() {
@@ -547,7 +569,6 @@ EOF
 # EXECUTION
 # ################################################
 
-is_selected update && run_step update
 is_selected essential && run_step essential
 is_selected monitoring && run_step monitoring
 is_selected terminal && run_step terminal
@@ -596,27 +617,3 @@ print_success "Log file: $LOGFILE"
 # Schreibtischschrift muss gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
 # set zsh config
-
-# Zram
-# sudo apt install zram-config
-# prüfen mit zramctl oder swapon --show
-# vm.swappiness=10
-# vm.vfs_cache_pressure=50
-# an das Ende von sudo nano /etc/sysctl.conf
-# aktivieren mit sudo sysctl -p
-
-# preload
-# sudo apt install preload
-# aktivieren mit sudo systemctl enable --now preload
-# prüfen systemctl status preload
-# config ist in /etc/preload.conf
-
-# BFQ tmp
-# echo bfq | sudo tee /sys/block/sda/queue/scheduler
-# echo bfq | sudo tee /sys/block/sdb/queue/scheduler
-# test cat /sys/block/sda/queue/scheduler
-# test  cat /sys/block/sdb/queue/scheduler
-
-# BFQ permanent
-# sudo nano /etc/udev/rules.d/60-ioschedulers.rules
-# einfügen: ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/scheduler}="bfq"
