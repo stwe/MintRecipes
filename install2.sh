@@ -48,10 +48,31 @@ if ! sudo -v; then
 fi
 
 ################################################
-# APT HELPER
+# DOWNLOAD HELPER
 ################################################
 
-install_apt_packages() { sudo apt install -y "$@"; }
+install_apt_packages() {
+    print_section "Installing: $*"
+    sudo apt install -y "$@" >>"$LOGFILE" 2>&1
+}
+
+download_curl() {
+    local url="$1"
+    local output="$2"
+
+    print_section "Downloading $(basename "$output")"
+
+    curl -L --progress-bar "$url" -o "$output" \
+        || { print_error "Download failed: $url"; return 1; }
+}
+
+download_silent() {
+    local url="$1"
+    local output="$2"
+
+    curl -fsSL "$url" -o "$output" >>"$LOGFILE" 2>&1 \
+        || { print_error "Download failed: $url"; return 1; }
+}
 
 ################################################
 # PREPARE
@@ -175,7 +196,11 @@ fi
 
 if [[ "$DO_XANMOD" == "TRUE" ]]; then
     print_section "Installing XanMod Kernel V3"
-    wget -qO - https://dl.xanmod.org/archive.key | sudo gpg --dearmor -vo /etc/apt/keyrings/xanmod-archive-keyring.gpg
+
+    download_silent "https://dl.xanmod.org/archive.key" "/tmp/xanmod.key"
+    sudo gpg --dearmor -o /etc/apt/keyrings/xanmod-archive-keyring.gpg /tmp/xanmod.key
+    rm /tmp/xanmod.key
+
     echo "deb [signed-by=/etc/apt/keyrings/xanmod-archive-keyring.gpg] http://deb.xanmod.org $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/xanmod-release.list
     sudo apt update
     install_apt_packages linux-xanmod-x64v3
@@ -234,7 +259,9 @@ fi
 
 if [[ "$DO_BROWSER" == "TRUE" ]]; then
     print_section "Installing Google Chrome"
-    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    download_curl \
+        "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" \
+        "google-chrome-stable_current_amd64.deb"
     install_apt_packages ./google-chrome-stable_current_amd64.deb
     rm google-chrome-stable_current_amd64.deb
 fi
@@ -242,7 +269,9 @@ fi
 if [[ "$DO_MESSENGER" == "TRUE" ]]; then
     print_section "Installing Messenger Client (WasIstLos)"
     WA_VERSION=$(curl -s "https://api.github.com/repos/xeco23/WasIstLos/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    wget https://github.com/xeco23/WasIstLos/releases/latest/download/wasistlos_${WA_VERSION}_amd64.deb
+    download_curl \
+        "https://github.com/xeco23/WasIstLos/releases/latest/download/wasistlos_${WA_VERSION}_amd64.deb" \
+        "wasistlos_${WA_VERSION}_amd64.deb"
     install_apt_packages ./wasistlos_${WA_VERSION}_amd64.deb
     rm wasistlos_${WA_VERSION}_amd64.deb
 fi
@@ -314,7 +343,9 @@ fi
 if [[ "$DO_LAZYGIT" == "TRUE" ]]; then
     print_section "Installing Lazygit"
     LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
-    curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+    download_curl \
+        "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
+        "lazygit.tar.gz"
     tar xf lazygit.tar.gz lazygit
     sudo install lazygit /usr/local/bin
     rm lazygit.tar.gz lazygit
@@ -322,14 +353,15 @@ fi
 
 install_clion() {
     print_section "Installing CLion"
+
     clion_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
-    if wget "https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz"; then
-        mkdir -p ~/.clion
-        tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion --strip-components=1
-        rm CLion-${clion_version}.tar.gz
-    else
-        print_error "Download of CLion ${clion_version} failed."
-    fi
+    download_curl \
+        "https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz" \
+        "CLion-${clion_version}.tar.gz"
+    mkdir -p ~/.clion
+    tar xvzf CLion-${clion_version}.tar.gz -C ~/.clion --strip-components=1
+    rm CLion-${clion_version}.tar.gz
+
     mkdir -p ~/.local/share/nemo/actions
     cat <<EOF > ~/.local/share/nemo/actions/open_in_clion.nemo_action
 [Nemo Action]
@@ -343,14 +375,14 @@ EOF
 
 install_idea() {
     print_section "Installing IntelliJ IDEA Community"
+
     idea_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
-    if wget "https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz"; then
-        mkdir -p ~/.idea
-        tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea --strip-components=1
-        rm ideaIC-${idea_version}.tar.gz
-    else
-        print_error "Download of IntelliJ IDEA ${idea_version} failed."
-    fi
+    download_curl \
+        "https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz" \
+        "ideaIC-${idea_version}.tar.gz"
+    mkdir -p ~/.idea
+    tar xvzf ideaIC-${idea_version}.tar.gz -C ~/.idea --strip-components=1
+    rm ideaIC-${idea_version}.tar.gz
 }
 
 if [[ "$SEL_JETBRAINS" != "Keine" ]]; then
@@ -429,19 +461,22 @@ if [[ "$DO_ASSETS" == "TRUE" ]]; then
     # JetBrains Mono Nerd Font
     if [ ! -d ~/.fonts/JetBrainsMono ]; then
         print_section "Downloading JetBrains Mono Nerd Font."
+
         FONT_URL=$(curl -s https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | grep "browser_download_url.*JetBrainsMono.zip" | cut -d '"' -f 4)
-        wget -qO /tmp/JetBrainsMono.zip "$FONT_URL"
+        download_curl "$FONT_URL" "/tmp/JetBrainsMono.zip"
         mkdir -p ~/.fonts/JetBrainsMono
         unzip -o /tmp/JetBrainsMono.zip -d ~/.fonts/JetBrainsMono
         rm /tmp/JetBrainsMono.zip
         install_apt_packages fonts-inter fonts-jetbrains-mono fonts-symbola
         fc-cache -f
         sleep 3
+
         gsettings set org.cinnamon.desktop.interface font-name "Inter Regular 10"
         gsettings set org.gnome.desktop.interface document-font-name "Inter Regular 10"
         gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono Regular 10"
         gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Inter Display Regular 10"
         gsettings set org.cinnamon.desktop.interface text-scaling-factor 1.0
+
         print_success "Nerd Fonts installed."
     fi
 
@@ -563,10 +598,12 @@ fi
 
 if [[ "$DO_PLANK" == "TRUE" ]]; then
     print_section "Setting up panels"
+
     # Install Plank Reloaded (zquestz repo)
     if ! dpkg -l | grep -q plank-reloaded; then
-        curl -fsSL https://zquestz.github.io/ppa/ubuntu/KEY.gpg \
-            | sudo gpg --dearmor -o /usr/share/keyrings/zquestz-archive-keyring.gpg
+        download_silent "https://zquestz.github.io/ppa/ubuntu/KEY.gpg" "/tmp/plank.key"
+        sudo gpg --dearmor -o /usr/share/keyrings/zquestz-archive-keyring.gpg /tmp/plank.key
+        rm /tmp/plank.key
 
         echo "deb [signed-by=/usr/share/keyrings/zquestz-archive-keyring.gpg] https://zquestz.github.io/ppa/ubuntu ./" \
             | sudo tee /etc/apt/sources.list.d/zquestz.list
