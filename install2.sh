@@ -322,12 +322,16 @@ fi
 
 if [[ "$DO_VSCODE" == "TRUE" ]]; then
     print_section "Installing Visual Studio Code"
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-    sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+
+    download_silent "https://packages.microsoft.com/keys/microsoft.asc" "/tmp/vscode.asc"
+    gpg --dearmor < /tmp/vscode.asc > /tmp/packages.microsoft.gpg
+    sudo install -D -o root -g root -m 644 /tmp/packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+    rm /tmp/vscode.asc /tmp/packages.microsoft.gpg
+
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
-    rm -f packages.microsoft.gpg
     sudo apt update
     install_apt_packages code
+
     mkdir -p ~/.local/share/nemo/actions
     cat <<EOF > ~/.local/share/nemo/actions/open_in_vscode.nemo_action
 [Nemo Action]
@@ -443,7 +447,12 @@ fi
 
 if [[ "$DO_VPN" == "TRUE" ]]; then
     print_section "Installing NordVPN"
-    sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
+
+    download_silent "https://downloads.nordcdn.com/apps/linux/install.sh" "/tmp/nordvpn_install.sh"
+    bash /tmp/nordvpn_install.sh -n >>"$LOGFILE" 2>&1 || print_error "NordVPN Installation fehlgeschlagen"
+    rm /tmp/nordvpn_install.sh
+
+    print_success "NordVPN erfolgreich (non-interaktiv) installiert."
 fi
 
 ################################################
@@ -635,14 +644,14 @@ EOF
     mkdir -p "$TARGET_DIR"
 
     # Bash Sensors
-    wget -q https://cinnamon-spices.linuxmint.com/files/applets/bash-sensors@pkkk.zip -O bash-sensors.zip
-    unzip -o bash-sensors.zip -d "$TARGET_DIR"
+    download_silent "https://cinnamon-spices.linuxmint.com/files/applets/bash-sensors@pkkk.zip" "/tmp/bash-sensors.zip"
+    unzip -o /tmp/bash-sensors.zip -d "$TARGET_DIR"
 
     # Sensors@claudiux
-    wget -q https://cinnamon-spices.linuxmint.com/files/applets/Sensors@claudiux.zip -O sensors-claudiux.zip
-    unzip -o sensors-claudiux.zip -d "$TARGET_DIR"
+    download_silent "https://cinnamon-spices.linuxmint.com/files/applets/Sensors@claudiux.zip" "/tmp/sensors-claudiux.zip"
+    unzip -o /tmp/sensors-claudiux.zip -d "$TARGET_DIR"
 
-    rm bash-sensors.zip sensors-claudiux.zip
+    rm /tmp/bash-sensors.zip /tmp/sensors-claudiux.zip
 
     gsettings set org.cinnamon enabled-applets \
         "['panel1:left:0:menu@cinnamon.org:0',
