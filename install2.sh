@@ -448,9 +448,15 @@ if [[ "$DO_ASSETS" == "TRUE" ]]; then
     # Kora Icon Theme
     if [ ! -d ~/.icons/kora ]; then
         print_section "Installing Kora Icons."
+
         cd ~/.icons
-        git clone https://github.com/bikass/kora.git --depth=1
+        git clone https://github.com/bikass/kora.git
+
+        mv kora/kora/* kora/
+        rm -rf kora/kora
+
         gsettings set org.cinnamon.desktop.interface icon-theme "kora"
+
         print_success "Kora Icons installed and applied."
     fi
 fi
@@ -477,11 +483,81 @@ fi
 
 if [[ "$SEL_TERM" == "Alacritty" ]]; then
     print_section "Installing terminal tools"
+
     install_apt_packages alacritty zsh
+
+    # Set zsh as default shell
+    ZSH_PATH=$(command -v zsh)
+    if [[ "$SHELL" != "$ZSH_PATH" ]]; then
+        sudo usermod -s "$ZSH_PATH" "$USER"
+        print_success "Zsh set as default shell (effective after re-login)."
+    fi
+
+    # Install Oh My Zsh
+    if [ ! -d "$HOME/.oh-my-zsh" ]; then
+        print_section "Installing Oh My Zsh"
+
+        RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+        print_success "Oh My Zsh installed"
+    fi
+
+    # Ensure ZSH_CUSTOM is set globally
+    export ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+    # Install Powerlevel10k
+    if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
+        print_section "Installing Powerlevel10k"
+
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+            "$ZSH_CUSTOM/themes/powerlevel10k" \
+            || print_error "Powerlevel10k install failed"
+
+        print_success "Powerlevel10k installed"
+    fi
+
+    # Install Zsh plugins
+    print_section "Installing Zsh Plugins"
+
+    if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+        git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions \
+            "$ZSH_CUSTOM/plugins/zsh-autosuggestions" \
+            || print_error "Autosuggestions install failed"
+    fi
+
+    if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
+        git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting \
+            "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" \
+            || print_error "Syntax highlighting install failed"
+    fi
+
+    print_success "Zsh plugins installed."
+
+    # ZSH/Oh My Zsh config
+    print_section "Applying Zsh configuration"
+
+    if [ -d "$SCRIPT_DIR/.config/zsh" ]; then
+        mkdir -p ~/.config/zsh
+
+        cp -r "$SCRIPT_DIR/.config/zsh/." ~/.config/zsh/
+
+        ln -sf ~/.config/zsh/.zshrc ~/.zshrc
+        ln -sf ~/.config/zsh/.p10k.zsh ~/.p10k.zsh
+
+        chown -R "$USER:$USER" ~/.config/zsh
+
+        print_success "Zsh config deployed from repo."
+    else
+        print_error "Zsh config not found in repo."
+    fi
+
+    # Alacritty config
     if [ -d "$SCRIPT_DIR/.config/alacritty" ]; then
         cp -R "$SCRIPT_DIR/.config/alacritty" ~/.config/
         chown -R "$USER:$USER" ~/.config/alacritty
     fi
+
     gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
 fi
 
