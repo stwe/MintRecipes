@@ -126,8 +126,8 @@ Planned improvements:
 ## ▶️ Usage
 
 ```bash
-chmod +x install.sh
-./install.sh
+chmod +x install2.sh
+./install2.sh
 ```
 
 - Do not run as root
