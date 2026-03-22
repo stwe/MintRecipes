@@ -62,7 +62,7 @@ download_curl() {
 
     print_section "Downloading $(basename "$output")"
 
-    curl -L --progress-bar "$url" -o "$output" \
+    curl -fL --retry 3 --retry-delay 2 --progress-bar "$url" -o "$output" \
         || { print_error "Download failed: $url"; return 1; }
 }
 
@@ -70,7 +70,9 @@ download_silent() {
     local url="$1"
     local output="$2"
 
-    curl -fsSL "$url" -o "$output" >>"$LOGFILE" 2>&1 \
+    print_section "Downloading $(basename "$output")"
+
+    curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$output" >>"$LOGFILE" 2>&1 \
         || { print_error "Download failed: $url"; return 1; }
 }
 
@@ -87,7 +89,7 @@ if ! command -v yad >/dev/null; then
     print_success "YAD erfolgreich installiert"
 fi
 
-mkdir -p ~/Bilder ~/.local/bin ~/.config ~/.fonts ~/.icons ~/.themes
+mkdir -p ~/.local/bin ~/.fonts ~/.icons ~/.themes
 
 ################################################
 # GUI
@@ -171,7 +173,7 @@ if [[ "$DO_INFRA" == "TRUE" ]]; then
     print_section "Installing Infrastructure"
     install_apt_packages \
         git curl wget apt-transport-https ca-certificates \
-        build-essential cmake clangd cmake default-jre
+        build-essential cmake clangd default-jre
 fi
 
 if [[ "$DO_CLI" == "TRUE" ]]; then
@@ -268,10 +270,15 @@ fi
 
 if [[ "$DO_MESSENGER" == "TRUE" ]]; then
     print_section "Installing Messenger Client (WasIstLos)"
-    WA_VERSION=$(curl -s "https://api.github.com/repos/xeco23/WasIstLos/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+
+    download_silent "https://api.github.com/repos/xeco23/WasIstLos/releases/latest" "/tmp/wasistlos.json"
+    WA_VERSION=$(grep -Po '"tag_name": "v\K[^"]*' /tmp/wasistlos.json)
+    rm /tmp/wasistlos.json
+
     download_curl \
         "https://github.com/xeco23/WasIstLos/releases/latest/download/wasistlos_${WA_VERSION}_amd64.deb" \
         "wasistlos_${WA_VERSION}_amd64.deb"
+
     install_apt_packages ./wasistlos_${WA_VERSION}_amd64.deb
     rm wasistlos_${WA_VERSION}_amd64.deb
 fi
@@ -292,8 +299,9 @@ if [[ "$DO_DOCKER" == "TRUE" ]]; then
     sudo install -m 0755 -d /etc/apt/keyrings
 
     # Add Docker’s official GPG key
-    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    download_silent "https://download.docker.com/linux/ubuntu/gpg" "/tmp/docker.asc"
+    sudo install -m 644 /tmp/docker.asc /etc/apt/keyrings/docker.asc
+    rm /tmp/docker.asc
 
     # Add repository
     sudo tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
@@ -346,7 +354,11 @@ fi
 
 if [[ "$DO_LAZYGIT" == "TRUE" ]]; then
     print_section "Installing Lazygit"
-    LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+
+    download_silent "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" "/tmp/lazygit.json"
+    LAZYGIT_VERSION=$(grep -Po '"tag_name": "v\K[^"]*' /tmp/lazygit.json)
+    rm /tmp/lazygit.json
+
     download_curl \
         "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
         "lazygit.tar.gz"
@@ -358,7 +370,10 @@ fi
 install_clion() {
     print_section "Installing CLion"
 
-    clion_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
+    download_silent "https://data.services.jetbrains.com/products/releases?code=CL&latest=true&type=release" "/tmp/clion.json"
+    clion_version=$(grep -Po '"version":"\K[0-9.]+' /tmp/clion.json)
+    rm /tmp/clion.json
+
     download_curl \
         "https://download.jetbrains.com/cpp/CLion-${clion_version}.tar.gz" \
         "CLion-${clion_version}.tar.gz"
@@ -380,7 +395,10 @@ EOF
 install_idea() {
     print_section "Installing IntelliJ IDEA Community"
 
-    idea_version=$(curl -s "https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release" | grep -Po '"version":"\K[0-9.]+')
+    download_silent "https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release" "/tmp/idea.json"
+    idea_version=$(grep -Po '"version":"\K[0-9.]+' /tmp/idea.json)
+    rm /tmp/idea.json
+
     download_curl \
         "https://download.jetbrains.com/idea/ideaIC-${idea_version}.tar.gz" \
         "ideaIC-${idea_version}.tar.gz"
@@ -471,7 +489,10 @@ if [[ "$DO_ASSETS" == "TRUE" ]]; then
     if [ ! -d ~/.fonts/JetBrainsMono ]; then
         print_section "Downloading JetBrains Mono Nerd Font."
 
-        FONT_URL=$(curl -s https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest | grep "browser_download_url.*JetBrainsMono.zip" | cut -d '"' -f 4)
+        download_silent "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest" "/tmp/nerdfonts.json"
+        FONT_URL=$(grep "browser_download_url.*JetBrainsMono.zip" /tmp/nerdfonts.json | cut -d '"' -f 4)
+        rm /tmp/nerdfonts.json
+
         download_curl "$FONT_URL" "/tmp/JetBrainsMono.zip"
         mkdir -p ~/.fonts/JetBrainsMono
         unzip -o /tmp/JetBrainsMono.zip -d ~/.fonts/JetBrainsMono
@@ -541,8 +562,9 @@ if [[ "$SEL_TERM" == "Alacritty" ]]; then
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
         print_section "Installing Oh My Zsh"
 
-        RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+        download_curl "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh" "/tmp/ohmyzsh.sh"
+        RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh /tmp/ohmyzsh.sh
+        rm /tmp/ohmyzsh.sh
 
         print_success "Oh My Zsh installed"
     fi
@@ -713,3 +735,10 @@ print_success "Installation abgeschlossen! Log: $LOGFILE"
 yad --info --title "Fertig!" --text "Das System wurde erfolgreich konfiguriert. 
 
 Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel, Docker-Gruppen, Themes) zu aktivieren." --width=400 --image="system-reboot"
+
+# TODO
+#     Überschriften überarbeiten - Abstand Aussejhen
+#     Kitty + Yazi
+#
+# Schreibtischschrift muss gesetzt werden
+# Hinting auf Mittel muss ueber die Gui gesetzt werden

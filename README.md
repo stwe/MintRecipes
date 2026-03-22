@@ -1,90 +1,141 @@
-# 🧰 Linux Mint Post-Installation Setup Script
+# Linux Mint Post-Install Script
 
-A comprehensive Bash script to automate post-installation setup for **Linux Mint**.  
-Includes essential tools, development environments, appearance tweaks, and application installation — all selectable via a friendly **whiptail** interface or a `--all` flag.
+> ⚠️ Personal setup script – tailored to my own system and preferences.
+
+This repository contains a **post-installation script for Linux Mint (Cinnamon)** that automates a large part of my personal system setup after a fresh install.
+
+It is **not intended as a universal solution** or best-practice template. It reflects **my workflow, my hardware assumptions, and my preferences**.
 
 ---
 
-## ✨ Features
+## ✨ What This Script Does
 
-- Easy interactive selection or full automation (`--all`)
-- System update and essential utilities
-- Developer tools (Neovim, Git, LazyVim, Lazygit, Docker, etc.)
-- IDEs: IntelliJ IDEA, CLion, Visual Studio Code
-- Alternative terminal setup (Alacritty + Zsh)
-- Multimedia and messaging apps
-- Flatpak-based gaming setup (Steam, Lutris)
-- Optional removal of Firefox and BitTorrent client
-- NordVPN installation
-- Nextcloud + gocryptfs
+The script provides a **GUI-based installer (via YAD)** that lets you select different setup components across three categories:
+
+### 1. System Base
+- Core infrastructure tools (git, curl, build tools, etc.)
+- CLI utilities (htop, btop, mc, etc.)
+- GUI system tools (GParted, KeePassXC, etc.)
+- Monitoring tools (lm-sensors, smartmontools, etc.)
+- Optional virtualization support
+- Optional **XanMod Kernel (V3)**
+- Basic **performance tuning**
 - Firewall setup (UFW)
-- Desktop theming:
-  - **Kora** icons
-  - **WhiteSur** GTK theme
-  - **JetBrainsMono Nerd Font**
-  - Wallpaper configuration
 
 ---
 
-## 🚀 Usage
+### 2. Software & Development
+Optional installation of:
+- Google Chrome
+- Messenger client (WasIstLos)
+- Multimedia tools (VLC, GIMP)
+- Docker (with proper repo setup)
+- Visual Studio Code
+- Lazygit
+- JetBrains IDEs (CLion / IntelliJ)
+- Native Linux gaming stack (AMD-focused)
+- Nextcloud client + encryption setup
+- NordVPN
 
-### 1. Download the script
+---
+
+### 3. Desktop & Appearance
+- Terminal setup (Alacritty + Zsh + Oh My Zsh + Powerlevel10k)
+- GTK Theme (WhiteSur Dark)
+- Icon theme (Kora)
+- Nerd Fonts (JetBrains Mono)
+- Optional Plank Dock setup
+- Optional cleanup (remove Firefox, Transmission)
+
+---
+
+## ⚙️ Performance Tweaks
+
+This script applies several performance-related tweaks that are **based on my personal preferences and system behavior**:
+
+- **Preload**
+- **ZRAM (systemd-zram-generator)**
+- **Custom sysctl tuning**
+- **BFQ scheduler (for SSDs)**
+- **XanMod kernel**
+
+> ⚠️ These are not guaranteed to improve performance on every system.
+
+---
+
+## 🎮 Gaming Approach
+
+For gaming, the script installs a **native Linux stack**:
+
+- Steam
+- Vulkan / Mesa drivers
+- Gamemode
+- MangoHud
+- Goverlay
+
+This setup is **optimized for AMD hardware**, which is what I’m using.
+
+> ⚠️ NVIDIA systems are **not considered or tested** here. Driver handling and compatibility can differ significantly, so adjustments will be required if you're on NVIDIA.
+
+No custom Proton builds or Lutris automation included (by design).
+
+---
+
+## 🎨 Desktop Customization
+
+The script applies a **modern look** using:
+
+- WhiteSur GTK theme
+- Kora icons
+- Custom fonts (Inter + JetBrains Mono Nerd Font)
+- Optional dock (Plank)
+
+However:
+
+- 🖼️ **Wallpaper is NOT set** (left to the user)
+- 🧩 **Panel layout is only partially configured**
+- ⚙️ Further customization is expected to be done manually
+
+---
+
+## ⚠️ Important Notes
+
+- This script is **heavily tailored to my personal setup**
+- Assumes:
+  - Linux Mint (Cinnamon)
+  - Typical desktop hardware (AMD-friendly)
+- Some parts are:
+  - Written in **German**
+  - Still **work in progress**
+  - Not fully modular or reusable
+
+---
+
+## 🚧 Project Status
+
+> ⚠️ This project is **not finished**
+
+Planned improvements:
+- Cleanup and modularization
+- Better structure and error handling
+- Additional terminal/file manager tooling (e.g. Kitty, Yazi)
+- Improved UI/UX in YAD dialogs
+
+---
+
+## ▶️ Usage
 
 ```bash
-git clone https://github.com/stwe/MintRecipes.git
-cd MintRecipes
 chmod +x install.sh
-```
-
-### 2. Run the script
-
-#### With interactive menu:
-
-```bash
 ./install.sh
 ```
 
-#### Install everything (non-interactive):
-
-```bash
-./install.sh --all
-```
+- Do not run as root
+- Requires sudo
+- A GUI session is required (YAD)
 
 ---
 
-## 📋 Prerequisites
-
-- Linux Mint (tested with current versions)
-- Sudo privileges
-- Internet connection
-
-The script checks for required tools and installs them if needed (`whiptail`, `flatpak`, etc.).
-
----
-
-## 🗂️ Structure
-
-Each feature group is modular, handled in its own function inside the script.  
-Selected options are applied in the order defined in the menu.
-
----
-
-## 💡 Notes
-
-- The script creates folders like `~/Bilder`, `~/.local/bin`, `~/.config`, etc.
-- Fonts and themes are downloaded from GitHub and applied automatically.
-- Some tools (e.g. `Lazygit`, `CLion`) fetch the latest version dynamically.
-
----
-
-## ⚠️ Disclaimer
-
-Use this script at your own risk.  
-While it has been tested with Linux Mint, system configurations may vary.  
-Review the code before executing.
-
----
-
-## ✅ License
+## 📄 License
 
 MIT License
