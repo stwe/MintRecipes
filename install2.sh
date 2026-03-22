@@ -124,7 +124,7 @@ RET=$?; [[ $RET -eq 1 ]] && exit 1; [[ $RET -eq 2 ]] && exec "$0"
 
 PAGE3=$(yad --title "Mint Setup (3/3) - Design" --width=650 --form --separator="|" \
     --text "<b>Erscheinungsbild und Aufräumen</b>" \
-    --field="Terminal Emulator:CB" "Alacritty!Standard" \
+    --field="Terminal Emulator:CB" "Alacritty!Kitty!Beide!Standard" \
     --field="Desktop Theme:CB" "WhiteSur-Dark!Mint-Standard" \
     --field="Icons und Fonts (Kora, JetBrains NerdFont):CHK" TRUE \
     --field="Plank Dock:CHK" TRUE \
@@ -435,6 +435,7 @@ if [[ "$SEL_JETBRAINS" != "Keine" ]]; then
             install_idea
             ;;
     esac
+
     print_success "JetBrains IDE(s) installed ($SEL_JETBRAINS)"
 fi
 
@@ -546,7 +547,7 @@ fi
 
 if [[ "$SEL_THEME" == "WhiteSur-Dark" ]]; then
     print_section "Installing WhiteSur GTK Theme"
-    
+
     # Abhängigkeiten für WhiteSur Installer
     install_apt_packages gtk2-engines-murrine gtk2-engines-pixbuf sassc
     
@@ -559,22 +560,80 @@ if [[ "$SEL_THEME" == "WhiteSur-Dark" ]]; then
     # Theme anwenden
     gsettings set org.cinnamon.desktop.interface gtk-theme "WhiteSur-Dark"
     gsettings set org.cinnamon.theme name "WhiteSur-Dark"
-    
+
     rm -rf "$TEMP_THEME_DIR"
     print_success "WhiteSur Theme applied"
 fi
 
-if [[ "$SEL_TERM" == "Alacritty" ]]; then
-    print_section "Installing terminal tools"
+install_alacritty() {
+    print_section "Installing Alacritty"
 
-    install_apt_packages alacritty zsh
+    install_apt_packages alacritty
 
-    # Set zsh as default shell
+    if [ -d "$SCRIPT_DIR/.config/alacritty" ]; then
+        cp -R "$SCRIPT_DIR/.config/alacritty" ~/.config/
+        chown -R "$USER:$USER" ~/.config/alacritty
+    fi
+
+    gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+
+    print_success "Alacritty installed"
+}
+
+install_kitty() {
+    print_section "Installing LATEST Kitty (Binary Installer)"
+
+    # 1. Alte Version entfernen
+    if dpkg -l | grep -q kitty; then
+        sudo apt purge -y kitty kitty-terminfo
+    fi
+
+    # 2. Installer ausführen
+    download_curl "https://sw.kovidgoyal.net/kitty/installer.sh" "/tmp/kitty_installer.sh"
+    sh /tmp/kitty_installer.sh
+    rm /tmp/kitty_installer.sh
+
+    # 3. Symlinks für PATH
+    mkdir -p ~/.local/bin
+    ln -sf ~/.local/kitty.app/bin/kitty ~/.local/bin/kitty
+    ln -sf ~/.local/kitty.app/bin/kitten ~/.local/bin/kitten
+
+    # 4. Konfiguration aus dem Repo kopieren
+    if [ -d "$SCRIPT_DIR/.config/kitty" ]; then
+        mkdir -p ~/.config/kitty
+        cp -r "$SCRIPT_DIR/.config/kitty/." ~/.config/kitty/
+        print_success "Kitty config copied from repo"
+    fi
+
+    # 4. Desktop-Icon für das Mint-Menü (Cinnamon) fixen
+    mkdir -p ~/.local/share/applications
+    cp ~/.local/kitty.app/share/applications/kitty.desktop ~/.local/share/applications/
+
+    # Pfad zum Icon im Desktop-File korrigieren
+    sed -i "s|Icon=kitty|Icon=$HOME/.local/kitty.app/share/icons/hicolor/256x256/apps/kitty.png|g" ~/.local/share/applications/kitty.desktop
+
+    # Pfad zum Executable korrigieren
+    sed -i "s|Exec=kitty|Exec=$HOME/.local/bin/kitty|g" ~/.local/share/applications/kitty.desktop
+
+    print_success "Kitty installed and configured"
+}
+
+install_zsh() {
+    print_section "Installing Zsh"
+
+    install_apt_packages zsh
+
     ZSH_PATH=$(command -v zsh)
     if [[ "$SHELL" != "$ZSH_PATH" ]]; then
         sudo usermod -s "$ZSH_PATH" "$USER"
         print_success "Zsh set as default shell (effective after re-login)."
     fi
+
+    print_success "Zsh installed"
+}
+
+install_omz() {
+    print_section "Installing Oh My Zsh"
 
     # Install Oh My Zsh
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -608,41 +667,53 @@ if [[ "$SEL_TERM" == "Alacritty" ]]; then
         git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions \
             "$ZSH_CUSTOM/plugins/zsh-autosuggestions" \
             || print_error "Autosuggestions install failed"
+        print_success "Autosuggestions installed"
     fi
 
     if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
         git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting \
             "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" \
             || print_error "Syntax highlighting install failed"
+        print_success "Syntax highlighting installed"
     fi
+}
 
-    print_success "Zsh plugins installed."
-
-    # ZSH/Oh My Zsh config
+apply_zsh_config() {
     print_section "Applying Zsh configuration"
 
     if [ -d "$SCRIPT_DIR/.config/zsh" ]; then
         mkdir -p ~/.config/zsh
-
+        
+        # Kopieren der Configs aus dem Repo ins System
         cp -r "$SCRIPT_DIR/.config/zsh/." ~/.config/zsh/
-
+        
+        # Symlinks setzen (Wichtig: -f erzwingt das Überschreiben)
         ln -sf ~/.config/zsh/.zshrc ~/.zshrc
+        # Falls .p10k.zsh auch in .config/zsh liegt, von dort verlinken:
         ln -sf ~/.config/zsh/.p10k.zsh ~/.p10k.zsh
 
-        chown -R "$USER:$USER" ~/.config/zsh
-
-        print_success "Zsh config deployed from repo."
+        print_success "Zsh config deployed and linked."
     else
-        print_error "Zsh config not found in repo."
+        print_error "Zsh config source directory not found!"
     fi
+}
 
-    # Alacritty config
-    if [ -d "$SCRIPT_DIR/.config/alacritty" ]; then
-        cp -R "$SCRIPT_DIR/.config/alacritty" ~/.config/
-        chown -R "$USER:$USER" ~/.config/alacritty
-    fi
+if [[ "$SEL_TERM" != "Standard" ]]; then
+    print_section "Installing terminal tools"
 
-    gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+    # 1. Terminals installieren
+    case "$SEL_TERM" in
+        "Alacritty") install_alacritty ;;
+        "Kitty")     install_kitty ;;
+        "Beide")     install_alacritty; install_kitty ;;
+    esac
+
+    # 2. Zsh installieren/konfigurieren
+    install_zsh
+    install_omz
+    apply_zsh_config
+
+    print_success "Terminal environment setup complete ($SEL_TERM)"
 fi
 
 if [[ "$DO_PLANK" == "TRUE" ]]; then
@@ -756,7 +827,5 @@ yad --info --title "Fertig!" --text "Das System wurde erfolgreich konfiguriert.
 Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel, Docker-Gruppen, Themes) zu aktivieren." --width=400 --image="system-reboot"
 
 # TODO
-#     Kitty + Yazi
-#
 # Schreibtischschrift muss selbst gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden

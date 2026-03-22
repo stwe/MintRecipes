@@ -40,7 +40,7 @@ Optional installation of:
 ---
 
 ### 3. Desktop & Appearance
-- Terminal setup (Alacritty + Zsh + Oh My Zsh + Powerlevel10k)
+- Terminal setup (Alacritty or Kitty + Zsh + Oh My Zsh + Powerlevel10k)
 - GTK Theme (WhiteSur Dark)
 - Icon theme (Kora)
 - Nerd Fonts (JetBrains Mono)
