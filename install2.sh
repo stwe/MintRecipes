@@ -174,26 +174,31 @@ if [[ "$DO_INFRA" == "TRUE" ]]; then
     install_apt_packages \
         git curl wget apt-transport-https ca-certificates \
         build-essential cmake clangd default-jre
+    print_success "Infrastructure installed"
 fi
 
 if [[ "$DO_CLI" == "TRUE" ]]; then
     print_section "Installing CLI Power-Tools"
     install_apt_packages htop btop mc neofetch unzip unrar p7zip-full tree cpu-checker
+    print_success "CLI Power-Tools installed"
 fi
 
 if [[ "$DO_SYSGUI" == "TRUE" ]]; then
     print_section "Installing System GUI Apps"
     install_apt_packages gparted keepassxc putty grub2-theme-mint
+    print_success "System GUI Apps installed"
 fi
 
 if [[ "$DO_MONITORING" == "TRUE" ]]; then
     print_section "Installing Monitoring Tools"
     install_apt_packages lm-sensors xsensors smartmontools wavemon
+    print_success "Monitoring Tools installed"
 fi
 
 if [[ "$DO_VIRT" == "TRUE" ]]; then
     print_section "Installing Virt-Manager"
     install_apt_packages virt-manager
+    print_success "Virt-Manager installed"
 fi
 
 if [[ "$DO_XANMOD" == "TRUE" ]]; then
@@ -206,6 +211,8 @@ if [[ "$DO_XANMOD" == "TRUE" ]]; then
     echo "deb [signed-by=/etc/apt/keyrings/xanmod-archive-keyring.gpg] http://deb.xanmod.org $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/xanmod-release.list
     sudo apt update
     install_apt_packages linux-xanmod-x64v3
+
+    print_success "XanMod Kernel installed"
 fi
 
 if [[ "$DO_PERF" == "TRUE" ]]; then
@@ -244,7 +251,7 @@ EOF
     sudo udevadm control --reload-rules
     sudo udevadm trigger
 
-    print_success "Performance tuning applied."
+    print_success "Performance tuning applied"
 fi
 
 if [[ "$DO_FW" == "TRUE" ]]; then
@@ -253,6 +260,7 @@ if [[ "$DO_FW" == "TRUE" ]]; then
     sudo ufw default deny incoming
     sudo ufw default allow outgoing
     sudo ufw --force enable
+    print_success "Firewall configured"
 fi
 
 ################################################
@@ -266,6 +274,7 @@ if [[ "$DO_BROWSER" == "TRUE" ]]; then
         "google-chrome-stable_current_amd64.deb"
     install_apt_packages ./google-chrome-stable_current_amd64.deb
     rm google-chrome-stable_current_amd64.deb
+    print_success "Google Chrome installed"
 fi
 
 if [[ "$DO_MESSENGER" == "TRUE" ]]; then
@@ -281,11 +290,14 @@ if [[ "$DO_MESSENGER" == "TRUE" ]]; then
 
     install_apt_packages ./wasistlos_${WA_VERSION}_amd64.deb
     rm wasistlos_${WA_VERSION}_amd64.deb
+
+    print_success "Messenger Client installed"
 fi
 
 if [[ "$DO_MULTIMEDIA" == "TRUE" ]]; then
     print_section "Installing Multimedia Apps"
     install_apt_packages vlc gimp gimp-help-de
+    print_success "Multimedia Apps installed"
 fi
 
 if [[ "$DO_DOCKER" == "TRUE" ]]; then
@@ -350,6 +362,7 @@ Selection=any
 Extensions=any;
 Dependencies=code;
 EOF
+print_success "Visual Studio Code installed"
 fi
 
 if [[ "$DO_LAZYGIT" == "TRUE" ]]; then
@@ -365,6 +378,8 @@ if [[ "$DO_LAZYGIT" == "TRUE" ]]; then
     tar xf lazygit.tar.gz lazygit
     sudo install lazygit /usr/local/bin
     rm lazygit.tar.gz lazygit
+
+    print_success "Lazygit installed"
 fi
 
 install_clion() {
@@ -420,6 +435,7 @@ if [[ "$SEL_JETBRAINS" != "Keine" ]]; then
             install_idea
             ;;
     esac
+    print_success "JetBrains IDE(s) installed ($SEL_JETBRAINS)"
 fi
 
 if [[ "$DO_GAMING" == "TRUE" ]]; then
@@ -461,6 +477,8 @@ if [[ "$DO_CLOUD" == "TRUE" ]]; then
     if [ -f "$SCRIPT_DIR/.local/bin/gcfs.sh" ]; then
         install -m 755 "$SCRIPT_DIR/.local/bin/gcfs.sh" ~/.local/bin/gcfs.sh
     fi
+
+    print_success "Cloud tools installed"
 fi
 
 if [[ "$DO_VPN" == "TRUE" ]]; then
@@ -470,7 +488,7 @@ if [[ "$DO_VPN" == "TRUE" ]]; then
     bash /tmp/nordvpn_install.sh -n >>"$LOGFILE" 2>&1 || print_error "NordVPN Installation fehlgeschlagen"
     rm /tmp/nordvpn_install.sh
 
-    print_success "NordVPN erfolgreich (non-interaktiv) installiert."
+    print_success "NordVPN installed"
 fi
 
 ################################################
@@ -507,7 +525,7 @@ if [[ "$DO_ASSETS" == "TRUE" ]]; then
         gsettings set org.cinnamon.desktop.wm.preferences titlebar-font "Inter Display Regular 10"
         gsettings set org.cinnamon.desktop.interface text-scaling-factor 1.0
 
-        print_success "Nerd Fonts installed."
+        print_success "Nerd Fonts installed"
     fi
 
     # Kora Icon Theme
@@ -522,7 +540,7 @@ if [[ "$DO_ASSETS" == "TRUE" ]]; then
 
         gsettings set org.cinnamon.desktop.interface icon-theme "kora"
 
-        print_success "Kora Icons installed and applied."
+        print_success "Kora Icons installed and applied"
     fi
 fi
 
@@ -543,7 +561,7 @@ if [[ "$SEL_THEME" == "WhiteSur-Dark" ]]; then
     gsettings set org.cinnamon.theme name "WhiteSur-Dark"
     
     rm -rf "$TEMP_THEME_DIR"
-    print_success "WhiteSur Theme applied."
+    print_success "WhiteSur Theme applied"
 fi
 
 if [[ "$SEL_TERM" == "Alacritty" ]]; then
@@ -729,6 +747,7 @@ if [[ "$DO_CLEANUP" == "TRUE" ]]; then
     sudo apt purge -y transmission-*
     sudo apt autoremove -y
     sudo apt autoclean
+    print_success "Cleanup finished"
 fi
 
 print_success "Installation abgeschlossen! Log: $LOGFILE"
@@ -737,8 +756,7 @@ yad --info --title "Fertig!" --text "Das System wurde erfolgreich konfiguriert.
 Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel, Docker-Gruppen, Themes) zu aktivieren." --width=400 --image="system-reboot"
 
 # TODO
-#     Überschriften überarbeiten - Abstand Aussejhen
 #     Kitty + Yazi
 #
-# Schreibtischschrift muss gesetzt werden
+# Schreibtischschrift muss selbst gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
