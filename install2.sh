@@ -129,6 +129,7 @@ PAGE3=$(yad --title "Mint Setup (3/3) - Design" --width=650 --form --separator="
     --field="Icons und Fonts (Kora, JetBrains NerdFont):CHK" TRUE \
     --field="Plank Dock:CHK" TRUE \
     --field="Firefox und Transmission entfernen:CHK" FALSE \
+    --field="SSH-Key generieren:CHK" FALSE \
     --button="Zurück:2" --button="INSTALLIEREN:0" --button="Abbrechen:1")
 RET=$?; [[ $RET -eq 1 ]] && exit 1; [[ $RET -eq 2 ]] && exec "$0"
 
@@ -163,7 +164,8 @@ SEL_TERM=$(echo "$PAGE3" | cut -d'|' -f1)
 SEL_THEME=$(echo "$PAGE3" | cut -d'|' -f2)
 DO_ASSETS=$(echo "$PAGE3" | cut -d'|' -f3)
 DO_PLANK=$(echo "$PAGE3" | cut -d'|' -f4)
-DO_CLEANUP=$(echo "$PAGE3" | cut -d'|' -f5)
+DO_SSH=$(echo "$PAGE3" | cut -d'|' -f5)
+DO_CLEANUP=$(echo "$PAGE3" | cut -d'|' -f6)
 
 ################################################
 # EXECUTION - PAGE 1
@@ -491,6 +493,13 @@ if [ "$DO_CLOUD" = "TRUE" ]; then
 
     if [ -f "$SCRIPT_DIR/.local/bin/gcfs.sh" ]; then
         install -m 700 "$SCRIPT_DIR/.local/bin/gcfs.sh" "$HOME/.local/bin/gcfs.sh"
+
+        yad --title="Secure Vault Information" \
+            --window-icon="security-high" \
+            --width=450 \
+            --text-align=left \
+            --text="\n<b>The Vault setup is complete, but requires manual action later:</b>\n\n1. Launch <b>Nextcloud Desktop</b> and log in.\n2. Ensure your encrypted folder (e.g., <i>~/Nextcloud/Vault_Raw</i>) is synced.\n3. The <b>Tresor</b> will automatically mount via autostart once the files are present.\n\n<i>Note: The drive will remain empty until Nextcloud has finished downloading your vault data.</i>\n" \
+            --button="Understood":0 &
 
         mkdir -p "$HOME/.config/autostart"
         ABSOLUTE_PATH="$HOME/.local/bin/gcfs.sh"
@@ -840,6 +849,33 @@ EOF
     # Plank Reloaded settings
     gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ icon-size 36
     gsettings set net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/ theme 'Gtk+'
+fi
+
+if [[ "$DO_SSH" == "TRUE" ]]; then
+    print_section "Generating SSH Key"
+
+    SSH_KEY="$HOME/.ssh/id_ed25519"
+
+    if [[ -f "$SSH_KEY" ]]; then
+        print_error "SSH Key already exists. Skipping generation."
+    else
+        SSH_EMAIL=$(yad --title="SSH Configuration" --window-icon="security-high" \
+            --text="Please enter your email for the SSH key:" \
+            --entry --entry-label="Email:" --entry-text="user@example.com" --width=400)
+
+        if [[ -n "$SSH_EMAIL" ]]; then
+            echo -e "${CYAN}ATTENTION: Please look at the terminal to set your SSH passphrase!${NC}"
+
+            ssh-keygen -t ed25519 -C "$SSH_EMAIL" -f "$SSH_KEY"
+
+            eval "$(ssh-agent -s)"
+            ssh-add "$SSH_KEY"
+
+            print_success "SSH Key generated successfully."
+        else
+            print_error "SSH Setup cancelled (no email provided)."
+        fi
+    fi
 fi
 
 if [[ "$DO_CLEANUP" == "TRUE" ]]; then
