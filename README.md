@@ -25,7 +25,6 @@ The script provides a **GUI-based installer (via YAD)** that lets you select dif
 ---
 
 ### 2. Software & Development
-Optional installation of:
 - Google Chrome
 - Messenger client (WasIstLos)
 - Multimedia tools (VLC, GIMP)
@@ -44,8 +43,8 @@ Optional installation of:
 - GTK Theme (WhiteSur Dark)
 - Icon theme (Kora)
 - Nerd Fonts (JetBrains Mono)
-- Optional Plank Dock setup
-- Optional cleanup (remove Firefox, Transmission)
+- Plank Dock setup
+- Remove Firefox and Transmission
 
 ---
 
@@ -108,18 +107,6 @@ However:
   - Written in **German**
   - Still **work in progress**
   - Not fully modular or reusable
-
----
-
-## 🚧 Project Status
-
-> ⚠️ This project is **not finished**
-
-Planned improvements:
-- Cleanup and modularization
-- Better structure and error handling
-- Additional terminal/file manager tooling (e.g. Kitty, Yazi)
-- Improved UI/UX in YAD dialogs
 
 ---
 

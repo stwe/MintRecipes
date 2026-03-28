@@ -84,9 +84,9 @@ sudo apt update
 sudo apt upgrade -y
 
 if ! command -v yad >/dev/null; then
-    print_section "YAD fehlt – wird installiert..."
+    print_section "YAD missing – proceeding with installation..."
     install_apt_packages yad
-    print_success "YAD erfolgreich installiert"
+    print_success "YAD successfully installed"
 fi
 
 mkdir -p ~/.local/bin ~/.fonts ~/.icons ~/.themes
@@ -237,19 +237,23 @@ EOF
 
     # Sysctl
     sudo tee /etc/sysctl.d/99-mint-performance.conf > /dev/null <<EOF
-vm.swappiness=10
+vm.swappiness=100
 vm.vfs_cache_pressure=50
+vm.page-cluster=0
 EOF
 
     sudo sysctl --system
 
-    # BFQ only for SATA
+    # HDD -> BFQ
     sudo tee /etc/udev/rules.d/60-ioschedulers.rules > /dev/null <<EOF
-ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="bfq"
+ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
 EOF
 
     sudo udevadm control --reload-rules
     sudo udevadm trigger
+
+    # Compositing bypassed for full-screen
+    gsettings set org.cinnamon.muffin unredirect-fullscreen-windows true
 
     print_success "Performance tuning applied"
 fi
@@ -470,13 +474,39 @@ if [[ "$DO_GAMING" == "TRUE" ]]; then
     print_success "Native AMD gaming stack installed."
 fi
 
-if [[ "$DO_CLOUD" == "TRUE" ]]; then
-    mkdir -p ~/Nextcloud
-    mkdir -p ~/Tresor
-    print_section "Installing Nextcloud Client and gocryptfs"
+if [ "$DO_CLOUD" = "TRUE" ]; then
+    mkdir -p "$HOME/Nextcloud" "$HOME/Tresor"
+
+    print_section "Setting up Nextcloud & Secure Vault Service"
     install_apt_packages gnome-calendar nextcloud-desktop gocryptfs libsecret-tools
+
+    if ! secret-tool lookup password tresor >/dev/null 2>&1; then
+        echo "No password for 'tresor' found in keyring."
+        read -s -p "Please enter the master password for your vault: " TRESOR_PW
+        echo ""
+        printf "%s" "$TRESOR_PW" | secret-tool store --label="Gocryptfs Tresor" password tresor
+        unset TRESOR_PW
+        print_success "Password securely stored in keyring."
+    fi
+
     if [ -f "$SCRIPT_DIR/.local/bin/gcfs.sh" ]; then
-        install -m 755 "$SCRIPT_DIR/.local/bin/gcfs.sh" ~/.local/bin/gcfs.sh
+        install -m 700 "$SCRIPT_DIR/.local/bin/gcfs.sh" "$HOME/.local/bin/gcfs.sh"
+
+        mkdir -p "$HOME/.config/autostart"
+        ABSOLUTE_PATH="$HOME/.local/bin/gcfs.sh"
+
+        cat <<EOF > "$HOME/.config/autostart/tresor.desktop"
+[Desktop Entry]
+Type=Application
+Exec="$ABSOLUTE_PATH"
+X-GNOME-Autostart-enabled=true
+Name=Tresor
+Comment=Mount Tresor
+X-GNOME-Autostart-Delay=5
+Icon=security-high
+EOF
+
+        chmod 644 "$HOME/.config/autostart/tresor.desktop"
     fi
 
     print_success "Cloud tools installed"
@@ -829,3 +859,6 @@ Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel,
 # TODO
 # Schreibtischschrift muss selbst gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
+# Gaming: Komposit deaktivieren für Vollbild
+# Kitty Theme
+# Conky
