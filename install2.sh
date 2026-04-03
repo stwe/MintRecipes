@@ -185,9 +185,23 @@ if [[ "$DO_CLI" == "TRUE" ]]; then
     print_success "CLI Power-Tools installed"
 fi
 
+install_keepassxc_latest() {
+    print_section "Installing KeePassXC (latest via PPA)"
+
+    if ! grep -rq "phoerious/keepassxc" /etc/apt/sources.list.d 2>/dev/null; then
+        sudo add-apt-repository -y ppa:phoerious/keepassxc
+        sudo apt update
+    fi
+
+    install_apt_packages keepassxc
+
+    print_success "KeePassXC (latest) installed"
+}
+
 if [[ "$DO_SYSGUI" == "TRUE" ]]; then
     print_section "Installing System GUI Apps"
-    install_apt_packages gparted keepassxc putty grub2-theme-mint
+    install_apt_packages gparted putty grub2-theme-mint
+    install_keepassxc_latest
     print_success "System GUI Apps installed"
 fi
 
