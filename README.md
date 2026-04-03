@@ -6,6 +6,8 @@ This repository contains a **post-installation script for Linux Mint (Cinnamon)*
 
 It is **not intended as a universal solution** or best-practice template. It reflects **my workflow, my hardware assumptions, and my preferences**.
 
+<img src="https://github.com/stwe/MintRecipes/blob/main/pics/desktop.png" width="300" height="600" />
+
 ---
 
 ## ✨ What This Script Does
