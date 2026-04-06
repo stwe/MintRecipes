@@ -128,8 +128,8 @@ PAGE3=$(yad --title "Mint Setup (3/3) - Design" --width=650 --form --separator="
     --field="Desktop Theme:CB" "WhiteSur-Dark!Mint-Standard" \
     --field="Icons und Fonts (Kora, JetBrains NerdFont):CHK" TRUE \
     --field="Plank Dock:CHK" TRUE \
-    --field="Firefox und Transmission entfernen:CHK" FALSE \
     --field="SSH-Key generieren:CHK" FALSE \
+    --field="Firefox und Transmission entfernen:CHK" FALSE \
     --button="Zurück:2" --button="INSTALLIEREN:0" --button="Abbrechen:1")
 RET=$?; [[ $RET -eq 1 ]] && exit 1; [[ $RET -eq 2 ]] && exec "$0"
 
@@ -186,7 +186,7 @@ if [[ "$DO_CLI" == "TRUE" ]]; then
 fi
 
 install_keepassxc_latest() {
-    print_section "Installing KeePassXC (latest via PPA)"
+    print_section "Installing KeePassXC"
 
     if ! grep -rq "phoerious/keepassxc" /etc/apt/sources.list.d 2>/dev/null; then
         sudo add-apt-repository -y ppa:phoerious/keepassxc
@@ -195,7 +195,7 @@ install_keepassxc_latest() {
 
     install_apt_packages keepassxc
 
-    print_success "KeePassXC (latest) installed"
+    print_success "KeePassXC installed"
 }
 
 if [[ "$DO_SYSGUI" == "TRUE" ]]; then
