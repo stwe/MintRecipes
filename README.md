@@ -126,6 +126,17 @@ chmod +x install2.sh
 
 ---
 
+## ⚠️ Software Requiring Manual Updates
+
+| Software  | Update Status | Reason                                      |
+| --------- | ------------- | ------------------------------------------- |
+| Lazygit   | ❌ manual      | Installed via GitHub release (tar.gz)       |
+| Yazi      | ❌ manual      | Installed via GitHub `.deb` (no repository) |
+| Kitty     | ❌ manual      | Installed via official installer script     |
+| WasIstLos | ❌ manual      | Installed via GitHub release                |
+
+---
+
 ## 📄 License
 
 MIT License
