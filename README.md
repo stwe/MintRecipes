@@ -42,6 +42,7 @@ The script provides a **GUI-based installer (via YAD)** that lets you select dif
 
 ### 3. Desktop & Appearance
 - Terminal setup (Alacritty or Kitty + Zsh + Oh My Zsh + Powerlevel10k)
+- Yazi (automatically installed when Kitty is selected)
 - GTK Theme (WhiteSur Dark)
 - Icon theme (Kora)
 - Nerd Fonts (JetBrains Mono)

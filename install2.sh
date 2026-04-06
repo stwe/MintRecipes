@@ -634,7 +634,7 @@ install_alacritty() {
 }
 
 install_kitty() {
-    print_section "Installing LATEST Kitty (Binary Installer)"
+    print_section "Installing Kitty"
 
     # 1. Alte Version entfernen
     if dpkg -l | grep -q kitty; then
@@ -669,6 +669,40 @@ install_kitty() {
     sed -i "s|Exec=kitty|Exec=$HOME/.local/bin/kitty|g" ~/.local/share/applications/kitty.desktop
 
     print_success "Kitty installed and configured"
+}
+
+install_yazi() {
+    print_section "Installing Yazi"
+
+    # Latest Release JSON holen
+    download_silent "https://api.github.com/repos/sxyazi/yazi/releases/latest" "/tmp/yazi.json"
+
+    # Version extrahieren (z.B. 26.1.22)
+    YAZI_VERSION=$(grep -Po '"tag_name": "v\K[^"]*' /tmp/yazi.json)
+
+    # Passendes .deb Asset extrahieren
+    YAZI_URL=$(grep -Po '"browser_download_url": "\K[^"]*x86_64-unknown-linux-gnu\.deb' /tmp/yazi.json)
+
+    rm /tmp/yazi.json
+
+    if [[ -z "$YAZI_URL" ]]; then
+        print_error "Failed to find Yazi .deb download URL"
+        return 1
+    fi
+
+    YAZI_DEB="/tmp/yazi_${YAZI_VERSION}.deb"
+
+    download_curl "$YAZI_URL" "$YAZI_DEB"
+
+    # Installation + Dependency Fix
+    if ! sudo apt install -y "$YAZI_DEB" >>"$LOGFILE" 2>&1; then
+        print_error "APT install failed, attempting fix..."
+        sudo apt -f install -y >>"$LOGFILE" 2>&1
+    fi
+
+    rm -f "$YAZI_DEB"
+
+    print_success "Yazi $YAZI_VERSION installed"
 }
 
 install_zsh() {
@@ -760,6 +794,11 @@ if [[ "$SEL_TERM" != "Standard" ]]; then
         "Kitty")     install_kitty ;;
         "Beide")     install_alacritty; install_kitty ;;
     esac
+
+    # 👉 Yazi nur bei Kitty oder Beide
+    if [[ "$SEL_TERM" == "Kitty" || "$SEL_TERM" == "Beide" ]]; then
+        install_yazi
+    fi
 
     # 2. Zsh installieren/konfigurieren
     install_zsh
@@ -909,6 +948,4 @@ Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel,
 # TODO
 # Schreibtischschrift muss selbst gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
-# Gaming: Komposit deaktivieren für Vollbild
-# Kitty Theme
 # Conky
