@@ -628,8 +628,6 @@ install_alacritty() {
         chown -R "$USER:$USER" ~/.config/alacritty
     fi
 
-    gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
-
     print_success "Alacritty installed"
 }
 
@@ -669,6 +667,32 @@ install_kitty() {
     sed -i "s|Exec=kitty|Exec=$HOME/.local/bin/kitty|g" ~/.local/share/applications/kitty.desktop
 
     print_success "Kitty installed and configured"
+}
+
+choose_default_terminal() {
+    print_section "Selecting default terminal"
+
+    yad --title="Select Default Terminal" \
+        --width=400 \
+        --center \
+        --text="Please choose your default terminal:" \
+        --button="Alacritty:0" \
+        --button="Kitty:1" \
+        --button="Cancel:2"
+
+    case $? in
+        0)
+            gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+            print_success "Alacritty set as default terminal"
+            ;;
+        1)
+            gsettings set org.cinnamon.desktop.default-applications.terminal exec "$HOME/.local/bin/kitty"
+            print_success "Kitty set as default terminal"
+            ;;
+        *)
+            print_error "No selection made – default terminal unchanged"
+            ;;
+    esac
 }
 
 install_yazi() {
@@ -788,19 +812,29 @@ apply_zsh_config() {
 if [[ "$SEL_TERM" != "Standard" ]]; then
     print_section "Installing terminal tools"
 
-    # 1. Terminals installieren
     case "$SEL_TERM" in
-        "Alacritty") install_alacritty ;;
-        "Kitty")     install_kitty ;;
-        "Beide")     install_alacritty; install_kitty ;;
+        "Alacritty")
+            install_alacritty
+            gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
+            ;;
+
+        "Kitty")
+            install_kitty
+            gsettings set org.cinnamon.desktop.default-applications.terminal exec "$HOME/.local/bin/kitty"
+            ;;
+
+        "Beide")
+            install_alacritty
+            install_kitty
+            choose_default_terminal
+            ;;
     esac
 
-    # 👉 Yazi nur bei Kitty oder Beide
+    # Yazi nur bei Kitty oder Beide
     if [[ "$SEL_TERM" == "Kitty" || "$SEL_TERM" == "Beide" ]]; then
         install_yazi
     fi
 
-    # 2. Zsh installieren/konfigurieren
     install_zsh
     install_omz
     apply_zsh_config
