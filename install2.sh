@@ -722,6 +722,7 @@ install_yazi() {
     if ! sudo apt install -y "$YAZI_DEB" >>"$LOGFILE" 2>&1; then
         print_error "APT install failed, attempting fix..."
         sudo apt -f install -y >>"$LOGFILE" 2>&1
+        install_apt_packages libimage-exiftool-perl
     fi
 
     rm -f "$YAZI_DEB"
