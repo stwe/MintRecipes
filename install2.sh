@@ -116,6 +116,7 @@ PAGE2=$(yad --title "Mint Setup (2/3) - Software" --width=650 --form --separator
     --field="Visual Studio Code:CHK" FALSE \
     --field="Lazygit:CHK" FALSE \
     --field="JetBrains IDEs:CB" "Keine!CLion!IntelliJ!Beide" \
+    --field="Neovim und LazyVim:CHK" FALSE \
     --field="Gaming Stack:CHK" FALSE \
     --field="Nextcloud:CHK" FALSE \
     --field="NordVPN:CHK" FALSE \
@@ -155,9 +156,10 @@ DO_DOCKER=$(echo "$PAGE2" | cut -d'|' -f4)
 DO_VSCODE=$(echo "$PAGE2" | cut -d'|' -f5)
 DO_LAZYGIT=$(echo "$PAGE2" | cut -d'|' -f6)
 SEL_JETBRAINS=$(echo "$PAGE2" | cut -d'|' -f7)
-DO_GAMING=$(echo "$PAGE2" | cut -d'|' -f8)
-DO_CLOUD=$(echo "$PAGE2" | cut -d'|' -f9)
-DO_VPN=$(echo "$PAGE2" | cut -d'|' -f10)
+DO_NVIM=$(echo "$PAGE2" | cut -d'|' -f8)
+DO_GAMING=$(echo "$PAGE2" | cut -d'|' -f9)
+DO_CLOUD=$(echo "$PAGE2" | cut -d'|' -f10)
+DO_VPN=$(echo "$PAGE2" | cut -d'|' -f11)
 
 # Page 3
 SEL_TERM=$(echo "$PAGE3" | cut -d'|' -f1)
@@ -457,6 +459,89 @@ if [[ "$SEL_JETBRAINS" != "Keine" ]]; then
     esac
 
     print_success "JetBrains IDE(s) installed ($SEL_JETBRAINS)"
+fi
+
+install_nvim_dependencies() {
+    print_section "Installing Neovim dependencies"
+
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    install_apt_packages nodejs ripgrep fd-find xclip python3-venv
+    sudo npm install -g neovim
+
+    mkdir -p "$HOME/.local/bin"
+    ln -sf /usr/bin/fdfind "$HOME/.local/bin/fd"
+
+    print_success "Neovim dependencies installed"
+}
+
+install_neovim() {
+    print_section "Installing Neovim"
+
+    if ! grep -rq "neovim-ppa/unstable" /etc/apt/sources.list.d 2>/dev/null; then
+        sudo add-apt-repository -y ppa:neovim-ppa/unstable
+        sudo apt update
+    fi
+
+    install_apt_packages neovim
+
+    print_success "Neovim installed"
+}
+
+install_lazyvim() {
+    print_section "Installing LazyVim"
+
+    if [ -d "$HOME/.config/nvim" ]; then
+        mv "$HOME/.config/nvim" "$HOME/.config/nvim.bak.$(date +%s)"
+        print_success "Existing nvim config backed up"
+    fi
+
+    rm -rf "$HOME/.local/share/nvim" \
+           "$HOME/.local/state/nvim" \
+           "$HOME/.cache/nvim"
+
+    git clone https://github.com/LazyVim/starter $HOME/.config/nvim
+    rm -rf "$HOME/.config/nvim/.git"
+
+    print_success "LazyVim installed"
+}
+
+configure_lazyvim() {
+    print_section "Configuring LazyVim"
+
+    local VENV_PATH="$HOME/.local/share/nvim/python_venv"
+    mkdir -p "$HOME/.local/share/nvim"
+
+    python3 -m venv "$VENV_PATH"
+    "$VENV_PATH/bin/pip" install pynvim
+
+    cat <<EOF >> "$HOME/.config/nvim/lua/config/options.lua"
+-- Custom Python Provider
+vim.g.python3_host_prog = vim.fn.expand("$VENV_PATH/bin/python3")
+-- Disable unused providers
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
+-- Custom UI Settings
+vim.opt.list = true
+vim.opt.listchars = { space = "·", tab = "→ " }
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+EOF
+
+    print_success "LazyVim configured"
+}
+
+if [[ "$DO_NVIM" == "TRUE" ]]; then
+    if [[ "$DO_ASSETS" != "TRUE" ]]; then
+        DO_ASSETS="TRUE"
+        print_success "Enable Nerd Fonts"
+    fi
+    install_nvim_dependencies
+    install_neovim
+    install_lazyvim
+    configure_lazyvim
+    print_success "Neovim and LazyVim setup complete."
 fi
 
 if [[ "$DO_GAMING" == "TRUE" ]]; then
@@ -983,4 +1068,3 @@ Es wird empfohlen, das System jetzt neu zu starten, um alle Änderungen (Kernel,
 # TODO
 # Schreibtischschrift muss selbst gesetzt werden
 # Hinting auf Mittel muss ueber die Gui gesetzt werden
-# Conky
