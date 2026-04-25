@@ -510,6 +510,7 @@ configure_lazyvim() {
 
     mkdir -p "$HOME/.local/share/nvim"
 
+    local VENV_PATH="$HOME/.local/share/nvim/python_venv"
     python3 -m venv "$VENV_PATH"
     "$VENV_PATH/bin/pip" install pynvim
 
