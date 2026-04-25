@@ -508,7 +508,6 @@ install_lazyvim() {
 configure_lazyvim() {
     print_section "Configuring LazyVim"
 
-    local VENV_PATH="$HOME/.local/share/nvim/python_venv"
     mkdir -p "$HOME/.local/share/nvim"
 
     python3 -m venv "$VENV_PATH"
