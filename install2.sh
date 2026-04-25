@@ -255,7 +255,7 @@ EOF
 
     # Sysctl
     sudo tee /etc/sysctl.d/99-mint-performance.conf > /dev/null <<EOF
-vm.swappiness=100
+vm.swappiness=10
 vm.vfs_cache_pressure=50
 vm.page-cluster=0
 EOF
