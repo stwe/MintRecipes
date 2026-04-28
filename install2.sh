@@ -464,7 +464,10 @@ fi
 install_nvim_dependencies() {
     print_section "Installing Neovim dependencies"
 
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    download_silent "https://deb.nodesource.com/setup_20.x" "/tmp/nodesource_setup.sh"
+    sudo -E bash /tmp/nodesource_setup.sh
+    rm /tmp/nodesource_setup.sh
+
     install_apt_packages nodejs ripgrep fd-find xclip python3-venv
     sudo npm install -g neovim
 
@@ -757,15 +760,16 @@ install_kitty() {
 choose_default_terminal() {
     print_section "Selecting default terminal"
 
+    RET=0
     yad --title="Select Default Terminal" \
         --width=400 \
         --center \
         --text="Please choose your default terminal:" \
         --button="Alacritty:0" \
         --button="Kitty:1" \
-        --button="Cancel:2"
+        --button="Cancel:2" || RET=$?
 
-    case $? in
+    case $RET in
         0)
             gsettings set org.cinnamon.desktop.default-applications.terminal exec "alacritty"
             print_success "Alacritty set as default terminal"
@@ -916,7 +920,6 @@ if [[ "$SEL_TERM" != "Standard" ]]; then
             ;;
     esac
 
-    # Yazi nur bei Kitty oder Beide
     if [[ "$SEL_TERM" == "Kitty" || "$SEL_TERM" == "Beide" ]]; then
         install_yazi
     fi
