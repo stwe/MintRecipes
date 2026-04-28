@@ -1,4 +1,4 @@
-# Linux Mint Post-Install Script
+# Linux Mint 22 Post-Install Script
 
 > ⚠️ Personal setup script – tailored to my own system and preferences.
 
